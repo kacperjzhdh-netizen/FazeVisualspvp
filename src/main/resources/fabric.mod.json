@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "fazevisuals",
+  "version": "${version}",
+  "name": "FazeVisuals",
+  "description": "Client-side PvP visuals: Target HUD, ESP, particles and more. Menu key: P.",
+  "authors": ["FazeVisuals"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pl.faze.visuals.FazeVisualsClient"]
+  },
+  "mixins": ["fazevisuals.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

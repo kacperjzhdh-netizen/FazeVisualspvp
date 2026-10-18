@@ -1,7 +1,9 @@
 name: Build FazeVisuals
+
 on:
   push:
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,8 +14,10 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: gradle build --no-daemon
-      - uses: actions/upload-artifact@v4
+      - name: Build
+        run: gradle build --no-daemon
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
         with:
           name: FazeVisuals-jar
           path: build/libs/FazeVisuals-*.jar
