@@ -1,0 +1,28 @@
+name: API query
+on:
+  workflow_dispatch:
+  push:
+    paths: ['api-query.txt', '.github/workflows/api.yml']
+jobs:
+  q:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: gradle build --no-daemon -q || true
+      - name: javap
+        run: |
+          CP=$(find ~/.gradle/caches -name '*.jar' | tr '\n' ':')
+          find ~/.gradle/caches/fabric-loom -name '*.jar' | head -30
+          while IFS= read -r line; do
+            case "$line" in ''|'#'*) continue;; esac
+            cls="${line%%::*}"; pat=""
+            case "$line" in *::*) pat="${line#*::}";; esac
+            echo "=== $cls"
+            if [ -n "$pat" ]; then javap -p -cp "$CP" "$cls" 2>&1 | grep -E "$pat|Error|not found" | head -60
+            else javap -p -cp "$CP" "$cls" 2>&1 | head -80; fi
+          done < api-query.txt

@@ -1,0 +1,35 @@
+# klasa::regex filtrujacy linie javap
+net.minecraft.client.render.item.HeldItemRenderer::renderFirstPersonItem|swing|Swing|applyEquip
+net.minecraft.client.render.GameRenderer::Projection|getFov|tiltView|bobView|renderHand|getOverlayTexture
+net.minecraft.entity.LivingEntity::getHandSwingDuration|swingHand|handSwing|hurtTime|maxHurtTime|isDead|deathTime|getHealth|addStatusEffect|removeStatusEffect
+net.minecraft.client.world.ClientWorld::setTime|TimeOfDay|getPlayers|getEntities|setRain
+net.minecraft.world.World::RainGradient|ThunderGradient|setTime|setRain
+net.minecraft.client.texture.NativeImage::setColor|getColor|upload|getWidth
+net.minecraft.client.texture.NativeImageBackedTexture::
+net.minecraft.client.render.OverlayTexture::
+net.minecraft.client.gui.DrawContext::drawGuiTexture|drawTexture|void draw|drawItem|drawStackOverlay|getMatrices|enableScissor|disableScissor|fill\(|drawText|drawCenteredTextWithShadow
+com.mojang.blaze3d.systems.RenderSystem::Scissor|depthMask|setShader|lineWidth|disableCull|enableCull|enableBlend|disableBlend|defaultBlendFunc|blendFunc|DepthTest
+com.mojang.blaze3d.platform.GlStateManager::_glBindVertexArray|_glUseProgram|_activeTexture|_bindTexture|_glBindFramebuffer|_viewport|_getInteger|_genTexture|_texImage2D|_texParameter|_glGenFramebuffers|_glFramebufferTexture2D
+net.minecraft.client.gl.Framebuffer::fbo|textureWidth|textureHeight|beginWrite|endWrite|getColorAttachment|Framebuffer\(|copyDepth
+net.minecraft.client.render.BufferRenderer::
+net.minecraft.client.render.VertexConsumer::color|vertex|normal
+net.minecraft.client.sound.PositionedSoundInstance::master
+net.minecraft.text.Style::withFont
+net.minecraft.entity.effect.StatusEffectInstance::getEffectType|getDuration|getAmplifier|INFINITE|isInfinite|StatusEffectInstance\(
+net.minecraft.entity.player.ItemCooldownManager::
+net.minecraft.client.option.GameOptions::getDamageTiltStrength|getFov|getPerspective|getGamma|hudHidden
+net.minecraft.client.render.Camera::getYaw|getPitch|getPos|getRotation
+net.minecraft.client.util.Window::getFramebuffer|getScaleFactor|getScaledWidth
+net.minecraft.client.MinecraftClient::getCurrentFps|getFramebuffer|getSoundManager|getRenderTickCounter|getNetworkHandler
+net.minecraft.client.render.RenderTickCounter::getTickDelta|getLastFrameDuration|getLastDuration
+net.minecraft.client.render.entity.LivingEntityRenderer::getOverlay
+net.minecraft.sound.SoundEvents::NOTE_BLOCK_BELL|NOTE_BLOCK_PLING|EXPERIENCE_ORB_PICKUP|ATTACK_CRIT|LIGHTNING_BOLT_THUNDER|UI_BUTTON_CLICK
+net.minecraft.registry.Registries::SOUND_EVENT|STATUS_EFFECT
+net.minecraft.util.Identifier::ofVanilla|of\(
+net.minecraft.entity.effect.StatusEffects::NIGHT_VISION
+net.minecraft.client.network.ClientPlayNetworkHandler::getPlayerListEntry
+net.minecraft.client.network.PlayerListEntry::getLatency
+net.minecraft.client.gui.hud.InGameHud::Effect|effect
+net.minecraft.client.render.Tessellator::begin|getInstance
+net.minecraft.client.render.BufferBuilder::
+org.lwjgl.opengl.GL30::glBlitFramebuffer|glGenFramebuffers|glFramebufferTexture2D|glBindVertexArray|glGenVertexArrays|GL_READ_FRAMEBUFFER
