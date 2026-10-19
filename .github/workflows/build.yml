@@ -1,9 +1,7 @@
 name: Build FazeVisuals
-
 on:
   push:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,10 +12,20 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build
-        run: gradle build --no-daemon
-      - name: Upload jar
-        uses: actions/upload-artifact@v4
+      - run: gradle build --no-daemon --warning-mode all
+      - uses: actions/upload-artifact@v4
         with:
           name: FazeVisuals-jar
           path: build/libs/FazeVisuals-*.jar
+      - name: Collect mapped jars (API reference)
+        if: always()
+        run: |
+          mkdir -p dump
+          find ~/.gradle/caches/fabric-loom -name '*.jar' -size +3M -print -exec cp --backup=numbered {} dump/ \; || true
+          ls -la dump || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-dump
+          path: dump/
+          retention-days: 3
