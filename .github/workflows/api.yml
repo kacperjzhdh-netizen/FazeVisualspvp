@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   push:
     paths: ['api-query.txt', '.github/workflows/api.yml']
+permissions:
+  contents: write
 jobs:
   q:
     runs-on: ubuntu-latest
@@ -25,4 +27,11 @@ jobs:
             echo "=== $cls"
             if [ -n "$pat" ]; then javap -p -cp "$CP" "$cls" 2>&1 | grep -E "$pat|Error|not found" | head -60
             else javap -p -cp "$CP" "$cls" 2>&1 | head -80; fi
-          done < api-query.txt
+          done < api-query.txt 2>&1 | tee /tmp/api-result.txt
+      - name: Publish result
+        if: always()
+        run: |
+          mkdir -p /tmp/o && cp /tmp/api-result.txt /tmp/o/ && cd /tmp/o
+          git init -q && git checkout -q -b ci-api && git config user.name ci && git config user.email ci@users.noreply.github.com
+          git add -A && git commit -qm api
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-api

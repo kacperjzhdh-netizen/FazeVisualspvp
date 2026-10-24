@@ -1,7 +1,10 @@
-name: Build FazeVisuals
+name: Build LifeVisuals
 on:
   push:
+    branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,20 +15,27 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: gradle build --no-daemon --warning-mode all
-      - uses: actions/upload-artifact@v4
-        with:
-          name: FazeVisuals-jar
-          path: build/libs/FazeVisuals-*.jar
-      - name: Collect mapped jars (API reference)
+      - name: Build
+        run: |
+          set -o pipefail
+          gradle build --no-daemon --warning-mode all 2>&1 | tee build.log
+      - name: Publish log and jar to ci-logs branch
         if: always()
         run: |
-          mkdir -p dump
-          find ~/.gradle/caches/fabric-loom -name '*.jar' -size +3M -print -exec cp --backup=numbered {} dump/ \; || true
-          ls -la dump || true
+          mkdir -p /tmp/out
+          cp build.log /tmp/out/ || true
+          cp build/libs/*.jar /tmp/out/ 2>/dev/null || true
+          rm -f /tmp/out/*-sources.jar /tmp/out/*-dev.jar
+          cd /tmp/out
+          git init -q
+          git checkout -q -b ci-logs
+          git config user.name ci
+          git config user.email ci@users.noreply.github.com
+          git add -A
+          git commit -qm "ci output for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-logs
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
-          name: api-dump
-          path: dump/
-          retention-days: 3
+          name: LifeVisuals-jar
+          path: build/libs/*.jar
