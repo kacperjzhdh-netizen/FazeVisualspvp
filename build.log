@@ -1,0 +1,43 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+The MavenArtifactRepository.artifactUrls(Object...) method has been deprecated. This is scheduled to be removed in Gradle 10. Consult the upgrading guide for further information: https://docs.gradle.org/9.8.1/userguide/upgrading_version_9.html#deprecated_maven_artifact_urls
+Fabric Loom: 1.9.2
+:remapping 50 mods from modImplementation (java-api)
+
+> Task :compileJava
+Note: /home/runner/work/FazeVisualspvp/FazeVisualspvp/src/main/java/pl/faze/visuals/FazeVisualsClient.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :processResources
+Build file '/home/runner/work/FazeVisualspvp/FazeVisualspvp/build.gradle': line 25
+Invocation of Task.project at execution time has been deprecated. This will fail with an error in Gradle 10. This API is incompatible with the configuration cache, which will become the only mode supported by Gradle in a future release. Consult the upgrading guide for further information: https://docs.gradle.org/9.8.1/userguide/upgrading_version_7.html#task_project
+	at build_585rnzw009dkalxzr0biuq99m$_run_closure4$_closure8.doCall$original(/home/runner/work/FazeVisualspvp/FazeVisualspvp/build.gradle:25)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+
+> Task :classes
+> Task :compileTestJava NO-SOURCE
+
+> Task :jar
+Build file '/home/runner/work/FazeVisualspvp/FazeVisualspvp/build.gradle': line 41
+Invocation of Task.project at execution time has been deprecated. This will fail with an error in Gradle 10. This API is incompatible with the configuration cache, which will become the only mode supported by Gradle in a future release. Consult the upgrading guide for further information: https://docs.gradle.org/9.8.1/userguide/upgrading_version_7.html#task_project
+	at build_585rnzw009dkalxzr0biuq99m$_run_closure7$_closure9$_closure10.doCall$original(/home/runner/work/FazeVisualspvp/FazeVisualspvp/build.gradle:41)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+
+> Task :processIncludeJars
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test NO-SOURCE
+> Task :validateAccessWidener NO-SOURCE
+> Task :check UP-TO-DATE
+> Task :remapJar
+> Task :remapSourcesJar SKIPPED
+> Task :assemble
+> Task :build
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792854033921.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/FazeVisualspvp/FazeVisualspvp/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1m 14s
+5 actionable tasks: 5 executed
