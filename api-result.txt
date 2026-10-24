@@ -1,0 +1,203 @@
+=== net.minecraft.client.gui.hud.InGameHud
+  private void renderCrosshair(net.minecraft.client.gui.DrawContext, net.minecraft.client.render.RenderTickCounter);
+=== net.minecraft.client.render.entity.LivingEntityRenderer
+  public void render(S, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int);
+  protected boolean shouldRenderFeatures(S);
+  protected boolean hasLabel(T, double);
+  protected boolean hasLabel(net.minecraft.entity.Entity, double);
+  public void render(net.minecraft.client.render.entity.state.EntityRenderState, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int);
+=== net.minecraft.client.render.entity.EntityRenderer
+  public boolean shouldRender(T, net.minecraft.client.render.Frustum, double, double, double);
+  protected boolean hasLabel(T, double);
+  protected void renderLabelIfPresent(S, net.minecraft.text.Text, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int);
+=== net.minecraft.client.gui.screen.TitleScreen
+  public net.minecraft.client.gui.screen.TitleScreen();
+  public net.minecraft.client.gui.screen.TitleScreen(boolean);
+  public net.minecraft.client.gui.screen.TitleScreen(boolean, net.minecraft.client.gui.LogoDrawer);
+  protected void init();
+  public void render(net.minecraft.client.gui.DrawContext, int, int, float);
+  public void renderBackground(net.minecraft.client.gui.DrawContext, int, int, float);
+  protected void renderPanoramaBackground(net.minecraft.client.gui.DrawContext, float);
+=== net.minecraft.client.gui.screen.world.SelectWorldScreen
+  public net.minecraft.client.gui.screen.world.SelectWorldScreen(net.minecraft.client.gui.screen.Screen);
+=== net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
+  public net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen(net.minecraft.client.gui.screen.Screen);
+=== net.minecraft.client.gui.screen.option.OptionsScreen
+  public net.minecraft.client.gui.screen.option.OptionsScreen(net.minecraft.client.gui.screen.Screen, net.minecraft.client.option.GameOptions);
+=== net.minecraft.client.MinecraftClient
+  public final net.minecraft.client.Keyboard keyboard;
+  private java.lang.String getWindowTitle();
+  private void handleGlErrorByDisableVsync(int, long);
+  public void setScreen(net.minecraft.client.gui.screen.Screen);
+  public void stop();
+  private void stopRecorder();
+  public void scheduleStop();
+  public void setScreenAndRender(net.minecraft.client.gui.screen.Screen);
+  public net.minecraft.client.network.ServerInfo getCurrentServerEntry();
+  public boolean isInSingleplayer();
+  public net.minecraft.client.session.Session getSession();
+  public com.mojang.authlib.minecraft.MinecraftSessionService getSessionService();
+  public boolean isWindowFocused();
+  public net.minecraft.client.util.Window getWindow();
+=== net.minecraft.client.Keyboard
+  private void debugError(java.lang.String, java.lang.Object...);
+  public java.lang.String getClipboard();
+  public void setClipboard(java.lang.String);
+=== net.minecraft.client.util.InputUtil
+  public static net.minecraft.client.util.InputUtil$Key fromKeyCode(int, int);
+  public static net.minecraft.client.util.InputUtil$Key fromTranslationKey(java.lang.String);
+  public static boolean isKeyPressed(long, int);
+=== net.minecraft.client.util.InputUtil$Key
+Compiled from "InputUtil.java"
+public final class net.minecraft.client.util.InputUtil$Key {
+  private final java.lang.String translationKey;
+  private final net.minecraft.client.util.InputUtil$Type type;
+  private final int code;
+  private final net.minecraft.util.Lazy<net.minecraft.text.Text> localizedText;
+  static final java.util.Map<java.lang.String, net.minecraft.client.util.InputUtil$Key> KEYS;
+  net.minecraft.client.util.InputUtil$Key(java.lang.String, net.minecraft.client.util.InputUtil$Type, int);
+  public net.minecraft.client.util.InputUtil$Type getCategory();
+  public int getCode();
+  public java.lang.String getTranslationKey();
+  public net.minecraft.text.Text getLocalizedText();
+  public java.util.OptionalInt toInt();
+  public boolean equals(java.lang.Object);
+  public int hashCode();
+  public java.lang.String toString();
+  private static net.minecraft.text.Text method_27444(net.minecraft.client.util.InputUtil$Type, int, java.lang.String);
+  static {};
+}
+=== net.minecraft.client.option.KeyBinding
+  public static void updateKeysByCode();
+  public net.minecraft.client.option.KeyBinding(java.lang.String, int, java.lang.String);
+  public net.minecraft.client.option.KeyBinding(java.lang.String, net.minecraft.client.util.InputUtil$Type, int, java.lang.String);
+  public boolean isPressed();
+  public boolean wasPressed();
+  public void setBoundKey(net.minecraft.client.util.InputUtil$Key);
+  public boolean matchesKey(int, int);
+  public java.lang.String getBoundKeyTranslationKey();
+=== net.minecraft.client.gui.screen.Screen
+  public boolean keyPressed(int, int, int);
+  public void close();
+  protected <T extends net.minecraft.client.gui.Element & net.minecraft.client.gui.Drawable & net.minecraft.client.gui.Selectable> T addDrawableChild(T);
+  public final void init(net.minecraft.client.MinecraftClient, int, int);
+  protected void clearAndInit();
+  protected void init();
+  public void removed();
+  public void renderBackground(net.minecraft.client.gui.DrawContext, int, int, float);
+  protected void applyBlur();
+  protected void renderDarkening(net.minecraft.client.gui.DrawContext);
+  protected void renderDarkening(net.minecraft.client.gui.DrawContext, int, int, int, int);
+  public static void renderBackgroundTexture(net.minecraft.client.gui.DrawContext, net.minecraft.util.Identifier, int, int, float, float, int, int);
+=== net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+Compiled from "ClientCommandManager.java"
+public final class net.fabricmc.fabric.api.client.command.v2.ClientCommandManager {
+  private net.fabricmc.fabric.api.client.command.v2.ClientCommandManager();
+  public static com.mojang.brigadier.CommandDispatcher<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> getActiveDispatcher();
+  public static com.mojang.brigadier.builder.LiteralArgumentBuilder<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> literal(java.lang.String);
+  public static <T> com.mojang.brigadier.builder.RequiredArgumentBuilder<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource, T> argument(java.lang.String, com.mojang.brigadier.arguments.ArgumentType<T>);
+}
+=== net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
+Compiled from "FabricClientCommandSource.java"
+public interface net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource extends net.minecraft.class_2172 {
+  public abstract void sendFeedback(net.minecraft.class_2561);
+  public abstract void sendError(net.minecraft.class_2561);
+  public abstract net.minecraft.class_310 getClient();
+  public abstract net.minecraft.class_746 getPlayer();
+  public default net.minecraft.class_1297 getEntity();
+  public default net.minecraft.class_243 getPosition();
+  public default net.minecraft.class_241 getRotation();
+  public abstract net.minecraft.class_638 getWorld();
+  public default java.lang.Object getMeta(java.lang.String);
+}
+=== net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
+Compiled from "ClientCommandRegistrationCallback.java"
+public interface net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback {
+  public static final net.fabricmc.fabric.api.event.Event<net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback> EVENT;
+  public abstract void register(com.mojang.brigadier.CommandDispatcher<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>, net.minecraft.class_7157);
+  private static net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback lambda$static$1(net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback[]);
+  private static void lambda$static$0(net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback[], com.mojang.brigadier.CommandDispatcher, net.minecraft.class_7157);
+  static {};
+}
+=== net.minecraft.client.network.AbstractClientPlayerEntity
+  public net.minecraft.client.util.SkinTextures getSkinTextures();
+=== net.minecraft.client.util.SkinTextures
+  private final net.minecraft.util.Identifier texture;
+  private final java.lang.String textureUrl;
+  public net.minecraft.util.Identifier texture();
+  public java.lang.String textureUrl();
+=== net.minecraft.client.gui.PlayerSkinDrawer
+  public static void draw(net.minecraft.client.gui.DrawContext, net.minecraft.client.util.SkinTextures, int, int, int);
+  public static void draw(net.minecraft.client.gui.DrawContext, net.minecraft.client.util.SkinTextures, int, int, int, int);
+  public static void draw(net.minecraft.client.gui.DrawContext, net.minecraft.util.Identifier, int, int, int, boolean, boolean, int);
+  private static void drawHat(net.minecraft.client.gui.DrawContext, net.minecraft.util.Identifier, int, int, int, boolean, int);
+=== net.minecraft.client.session.Session
+  public java.lang.String getUsername();
+=== net.minecraft.world.World
+  public long getTime();
+  public long getTimeOfDay();
+=== net.minecraft.client.option.KeyBinding
+Compiled from "KeyBinding.java"
+public class net.minecraft.client.option.KeyBinding implements java.lang.Comparable<net.minecraft.client.option.KeyBinding> {
+  private static final java.util.Map<java.lang.String, net.minecraft.client.option.KeyBinding> KEYS_BY_ID;
+  private static final java.util.Map<net.minecraft.client.util.InputUtil$Key, net.minecraft.client.option.KeyBinding> KEY_TO_BINDINGS;
+  private static final java.util.Set<java.lang.String> KEY_CATEGORIES;
+  public static final java.lang.String MOVEMENT_CATEGORY;
+  public static final java.lang.String MISC_CATEGORY;
+  public static final java.lang.String MULTIPLAYER_CATEGORY;
+  public static final java.lang.String GAMEPLAY_CATEGORY;
+  public static final java.lang.String INVENTORY_CATEGORY;
+  public static final java.lang.String UI_CATEGORY;
+  public static final java.lang.String CREATIVE_CATEGORY;
+  private static final java.util.Map<java.lang.String, java.lang.Integer> CATEGORY_ORDER_MAP;
+  private final java.lang.String translationKey;
+  private final net.minecraft.client.util.InputUtil$Key defaultKey;
+  private final java.lang.String category;
+  private net.minecraft.client.util.InputUtil$Key boundKey;
+  private boolean pressed;
+  private int timesPressed;
+  public static void onKeyPressed(net.minecraft.client.util.InputUtil$Key);
+  public static void setKeyPressed(net.minecraft.client.util.InputUtil$Key, boolean);
+  public static void updatePressedStates();
+  public static void unpressAll();
+  public static void untoggleStickyKeys();
+  public static void updateKeysByCode();
+  public net.minecraft.client.option.KeyBinding(java.lang.String, int, java.lang.String);
+  public net.minecraft.client.option.KeyBinding(java.lang.String, net.minecraft.client.util.InputUtil$Type, int, java.lang.String);
+  public boolean isPressed();
+  public java.lang.String getCategory();
+  public boolean wasPressed();
+  private void reset();
+  public java.lang.String getTranslationKey();
+  public net.minecraft.client.util.InputUtil$Key getDefaultKey();
+  public void setBoundKey(net.minecraft.client.util.InputUtil$Key);
+  public int compareTo(net.minecraft.client.option.KeyBinding);
+  public static java.util.function.Supplier<net.minecraft.text.Text> getLocalizedName(java.lang.String);
+  public boolean equals(net.minecraft.client.option.KeyBinding);
+  public boolean isUnbound();
+  public boolean matchesKey(int, int);
+  public boolean matchesMouse(int);
+  public net.minecraft.text.Text getBoundKeyLocalizedText();
+  public boolean isDefault();
+  public java.lang.String getBoundKeyTranslationKey();
+  public void setPressed(boolean);
+  public static net.minecraft.client.option.KeyBinding byId(java.lang.String);
+  public int compareTo(java.lang.Object);
+  private static net.minecraft.text.Text method_27465(java.lang.String);
+  private static void method_1418(java.util.HashMap);
+  static {};
+}
+=== net.minecraft.client.gui.DrawContext
+  public int getScaledWindowWidth();
+  public int getScaledWindowHeight();
+=== net.minecraft.client.render.WorldRenderer
+  private void renderTargetBlockOutline(net.minecraft.client.render.Camera, net.minecraft.client.render.VertexConsumerProvider$Immediate, net.minecraft.client.util.math.MatrixStack, boolean);
+=== net.minecraft.client.MinecraftClient
+  private void handleGlErrorByDisableVsync(int, long);
+  public boolean hasOutline(net.minecraft.entity.Entity);
+=== net.minecraft.entity.Entity
+  public int getTeamColorValue();
+  public final net.minecraft.util.math.Vec3d getLerpedPos(float);
+  public final boolean isGlowingLocal();
+  public boolean isGlowing();
+  public final net.minecraft.util.math.Box getBoundingBox();
