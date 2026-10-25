@@ -1,0 +1,49 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+The MavenArtifactRepository.artifactUrls(Object...) method has been deprecated. This is scheduled to be removed in Gradle 10. Consult the upgrading guide for further information: https://docs.gradle.org/9.8.1/userguide/upgrading_version_9.html#deprecated_maven_artifact_urls
+Fabric Loom: 1.9.2
+:remapping 50 mods from modImplementation (java-api)
+
+> Task :compileJava
+/home/runner/work/FazeVisualspvp/FazeVisualspvp/src/main/java/pl/life/visuals/module/ConfigStore.java:8: error: cannot find symbol
+import pl.life.visuals.LifeVisualsClient;
+                      ^
+  symbol:   class LifeVisualsClient
+  location: package pl.life.visuals
+/home/runner/work/FazeVisualspvp/FazeVisualspvp/src/main/java/pl/life/visuals/gfx/ScreenFx.java:12: error: cannot find symbol
+import pl.life.visuals.LifeVisualsClient;
+                      ^
+  symbol:   class LifeVisualsClient
+  location: package pl.life.visuals
+2 errors
+
+> Task :compileJava FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1792911405428.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/FazeVisualspvp/FazeVisualspvp/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /home/runner/work/FazeVisualspvp/FazeVisualspvp/src/main/java/pl/life/visuals/module/ConfigStore.java:8: error: cannot find symbol
+  import pl.life.visuals.LifeVisualsClient;
+                        ^
+    symbol:   class LifeVisualsClient
+    location: package pl.life.visuals
+  /home/runner/work/FazeVisualspvp/FazeVisualspvp/src/main/java/pl/life/visuals/gfx/ScreenFx.java:12: error: cannot find symbol
+  import pl.life.visuals.LifeVisualsClient;
+                        ^
+    symbol:   class LifeVisualsClient
+    location: package pl.life.visuals
+  2 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 26s
+1 actionable task: 1 executed
