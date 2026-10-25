@@ -1,0 +1,7 @@
+{
+  "required": false,
+  "package": "pl.life.visuals.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["GameRendererMixin", "HeldItemRendererMixin", "LivingEntitySwingMixin"],
+  "injectors": {"defaultRequire": 0}
+}

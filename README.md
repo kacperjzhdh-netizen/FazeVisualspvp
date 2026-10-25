@@ -1,4 +1,4 @@
-# FazeVisuals (Fabric 1.21.4)
+# LifeVisuals (Fabric 1.21.4)
 
 Klient wizualny PvP: Target HUD, ESP, Glow, czasteczki, Damage Indicator, Totem Pop. Menu: klawisz **P**.
 
@@ -6,14 +6,14 @@ Klient wizualny PvP: Target HUD, ESP, Glow, czasteczki, Damage Indicator, Totem 
 Wymagane: JDK 21 i internet (Gradle pobiera Minecraft 1.21.4, Yarn, Fabric Loom, Fabric API).
 
     gradle build          # lub ./gradlew build, jesli masz wrapper
-    # wynik: build/libs/FazeVisuals-1.0.0.jar  (NIE ten z "-sources")
+    # wynik: build/libs/LifeVisuals-1.0.0.jar  (NIE ten z "-sources")
 
 Bez instalowania czegokolwiek: wrzuc folder na GitHub – workflow `.github/workflows/build.yml`
-zbuduje JAR (zakladka Actions -> artefakt `FazeVisuals-jar`).
+zbuduje JAR (zakladka Actions -> artefakt `LifeVisuals-jar`).
 
 ## Instalacja
 1. Zainstaluj Fabric Loader dla 1.21.4 (fabricmc.net/use).
-2. Wrzuc `FazeVisuals-1.0.0.jar` oraz **Fabric API 0.119.4+1.21.4** do `.minecraft/mods`.
+2. Wrzuc `LifeVisuals-1.0.0.jar` oraz **Fabric API 0.119.4+1.21.4** do `.minecraft/mods`.
 3. Uruchom profil Fabric 1.21.4, w grze nacisnij **P**.
 
 Ustawienia zapisuja sie w `.minecraft/config/fazevisuals.json`.

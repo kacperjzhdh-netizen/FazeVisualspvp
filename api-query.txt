@@ -1,26 +1,11 @@
-net.minecraft.client.gui.hud.InGameHud::renderCrosshair
-net.minecraft.client.render.entity.LivingEntityRenderer::hasLabel|shouldRender|render\(
-net.minecraft.client.render.entity.EntityRenderer::hasLabel|renderLabelIfPresent|canRenderLabel|shouldRender
-net.minecraft.client.gui.screen.TitleScreen::TitleScreen\(|void init|render
-net.minecraft.client.gui.screen.world.SelectWorldScreen::SelectWorldScreen\(
-net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen::MultiplayerScreen\(
-net.minecraft.client.gui.screen.option.OptionsScreen::OptionsScreen\(
-net.minecraft.client.MinecraftClient::scheduleStop|void stop|setScreen|isWindowFocused|public.*keyboard|getWindow|getSession|getCurrentServerEntry|isInSingleplayer
-net.minecraft.client.Keyboard::setClipboard|getClipboard
-net.minecraft.client.util.InputUtil::fromTranslationKey|fromKeyCode|isKeyPressed
-net.minecraft.client.util.InputUtil$Key::
-net.minecraft.client.option.KeyBinding::setBoundKey|updateKeysByCode|getBoundKeyTranslationKey|matchesKey|wasPressed|isPressed|KeyBinding\(
-net.minecraft.client.gui.screen.Screen::renderBackground|applyBlur|renderDarkening|keyPressed|charTyped|mouseClicked|mouseScrolled|void close|removed|init\(|clearAndInit|addDrawableChild
-net.fabricmc.fabric.api.client.command.v2.ClientCommandManager::
-net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource::
-net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback::
-net.minecraft.client.network.AbstractClientPlayerEntity::getSkinTextures
-net.minecraft.client.util.SkinTextures::texture
-net.minecraft.client.gui.PlayerSkinDrawer::draw
-net.minecraft.client.session.Session::getUsername
-net.minecraft.world.World::getTime
-net.minecraft.client.option.KeyBinding::
-net.minecraft.client.gui.DrawContext::getScaledWindow
-net.minecraft.client.render.WorldRenderer::hasOutline|getBlockOutline
-net.minecraft.client.MinecraftClient::hasOutline
-net.minecraft.entity.Entity::getTeamColorValue|getLerpedPos|getBoundingBox|isGlowing
+net.minecraft.client.gui.hud.InGameHud::render|Crosshair|crosshair|Layer|layer|Layered
+net.minecraft.client.gui.LayeredDrawer::
+net.fabricmc.fabric.api.client.rendering.v1.hud.HudLayerRegistrationCallback::
+net.fabricmc.fabric.api.client.rendering.v1.hud.IdentifiedLayer::
+net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry::
+net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback::
+net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents::
+net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper::
+net.minecraft.entity.player.PlayerEntity::getAttackCooldownProgress|getArmor|getEquippedStack|getMainHandStack|getOffHandStack
+net.minecraft.entity.LivingEntity::getEquippedStack|getArmor|getAbsorptionAmount|getMaxHealth
+net.minecraft.client.render.entity.state.PlayerEntityRenderState::
