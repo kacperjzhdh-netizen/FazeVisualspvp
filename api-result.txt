@@ -1,0 +1,254 @@
+=== net.minecraft.client.world.ClientWorld
+  public void setTime(long, long, boolean);
+  public java.lang.Iterable<net.minecraft.entity.Entity> getEntities();
+  public int getSkyColor(net.minecraft.util.math.Vec3d, float);
+  public int getCloudsColor(float);
+=== net.minecraft.world.World
+  public void setThunderGradient(float);
+  public float getRainGradient(float);
+  public void setRainGradient(float);
+=== net.minecraft.client.render.BackgroundRenderer
+  public static org.joml.Vector4f getFogColor(net.minecraft.client.render.Camera, float, net.minecraft.client.world.ClientWorld, int, float);
+  public static net.minecraft.client.render.Fog applyFog(net.minecraft.client.render.Camera, net.minecraft.client.render.BackgroundRenderer$FogType, org.joml.Vector4f, float, boolean, float);
+=== net.minecraft.client.render.GameRenderer
+  public void renderBlur();
+  private float getFov(net.minecraft.client.render.Camera, float, boolean);
+  private void tiltViewWhenHurt(net.minecraft.client.util.math.MatrixStack, float);
+  private void bobView(net.minecraft.client.util.math.MatrixStack, float);
+  public org.joml.Matrix4f getBasicProjectionMatrix(float);
+  public net.minecraft.client.render.OverlayTexture getOverlayTexture();
+=== net.minecraft.client.render.item.HeldItemRenderer
+  private void renderFirstPersonItem(net.minecraft.client.network.AbstractClientPlayerEntity, float, float, net.minecraft.util.Hand, float, net.minecraft.item.ItemStack, float, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int);
+=== net.minecraft.client.gui.PlayerSkinDrawer
+  public static void draw(net.minecraft.client.gui.DrawContext, net.minecraft.client.util.SkinTextures, int, int, int);
+  public static void draw(net.minecraft.client.gui.DrawContext, net.minecraft.client.util.SkinTextures, int, int, int, int);
+  public static void draw(net.minecraft.client.gui.DrawContext, net.minecraft.util.Identifier, int, int, int, boolean, boolean, int);
+  private static void drawHat(net.minecraft.client.gui.DrawContext, net.minecraft.util.Identifier, int, int, int, boolean, int);
+=== net.minecraft.client.gui.DrawContext
+  public void fill(int, int, int, int, int);
+  public void fill(int, int, int, int, int, int);
+  public void fill(net.minecraft.client.render.RenderLayer, int, int, int, int, int);
+  public void fill(net.minecraft.client.render.RenderLayer, int, int, int, int, int, int);
+  public void drawGuiTexture(java.util.function.Function<net.minecraft.util.Identifier, net.minecraft.client.render.RenderLayer>, net.minecraft.util.Identifier, int, int, int, int);
+  public void drawGuiTexture(java.util.function.Function<net.minecraft.util.Identifier, net.minecraft.client.render.RenderLayer>, net.minecraft.util.Identifier, int, int, int, int, int);
+  public void drawGuiTexture(java.util.function.Function<net.minecraft.util.Identifier, net.minecraft.client.render.RenderLayer>, net.minecraft.util.Identifier, int, int, int, int, int, int, int, int);
+  public void drawSpriteStretched(java.util.function.Function<net.minecraft.util.Identifier, net.minecraft.client.render.RenderLayer>, net.minecraft.client.texture.Sprite, int, int, int, int);
+  public void drawSpriteStretched(java.util.function.Function<net.minecraft.util.Identifier, net.minecraft.client.render.RenderLayer>, net.minecraft.client.texture.Sprite, int, int, int, int, int);
+  public void drawItem(net.minecraft.item.ItemStack, int, int);
+  public void drawItem(net.minecraft.item.ItemStack, int, int, int);
+  public void drawItem(net.minecraft.item.ItemStack, int, int, int, int);
+  public void drawItemWithoutEntity(net.minecraft.item.ItemStack, int, int);
+  public void drawItemWithoutEntity(net.minecraft.item.ItemStack, int, int, int);
+  public void drawItem(net.minecraft.entity.LivingEntity, net.minecraft.item.ItemStack, int, int, int);
+  private void drawItem(net.minecraft.entity.LivingEntity, net.minecraft.world.World, net.minecraft.item.ItemStack, int, int, int);
+  private void drawItem(net.minecraft.entity.LivingEntity, net.minecraft.world.World, net.minecraft.item.ItemStack, int, int, int, int);
+  public void drawItemTooltip(net.minecraft.client.font.TextRenderer, net.minecraft.item.ItemStack, int, int);
+  private void drawItemBar(net.minecraft.item.ItemStack, int, int);
+=== net.minecraft.client.texture.StatusEffectSpriteManager
+Compiled from "StatusEffectSpriteManager.java"
+public class net.minecraft.client.texture.StatusEffectSpriteManager extends net.minecraft.client.texture.SpriteAtlasHolder {
+  public net.minecraft.client.texture.StatusEffectSpriteManager(net.minecraft.client.texture.TextureManager);
+  public net.minecraft.client.texture.Sprite getSprite(net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect>);
+}
+=== net.minecraft.entity.player.ItemCooldownManager
+Compiled from "ItemCooldownManager.java"
+public class net.minecraft.entity.player.ItemCooldownManager {
+  private final java.util.Map<net.minecraft.util.Identifier, net.minecraft.entity.player.ItemCooldownManager$Entry> entries;
+  private int tick;
+  public net.minecraft.entity.player.ItemCooldownManager();
+  public boolean isCoolingDown(net.minecraft.item.ItemStack);
+  public float getCooldownProgress(net.minecraft.item.ItemStack, float);
+  public void update();
+  public net.minecraft.util.Identifier getGroup(net.minecraft.item.ItemStack);
+  public void set(net.minecraft.item.ItemStack, int);
+  public void set(net.minecraft.util.Identifier, int);
+  public void remove(net.minecraft.util.Identifier);
+  protected void onCooldownUpdate(net.minecraft.util.Identifier, int);
+  protected void onCooldownUpdate(net.minecraft.util.Identifier);
+}
+=== net.minecraft.client.render.OverlayTexture
+Compiled from "OverlayTexture.java"
+public class net.minecraft.client.render.OverlayTexture implements java.lang.AutoCloseable {
+  private static final int field_32956;
+  public static final int field_32953;
+  public static final int field_32954;
+  public static final int field_32955;
+  public static final int DEFAULT_UV;
+  private final net.minecraft.client.texture.NativeImageBackedTexture texture;
+  public net.minecraft.client.render.OverlayTexture();
+  public void close();
+  public void setupOverlayColor();
+  public static int getU(float);
+  public static int getV(boolean);
+  public static int packUv(int, int);
+  public static int getUv(float, boolean);
+  public void teardownOverlayColor();
+  static {};
+}
+=== net.minecraft.client.texture.NativeImageBackedTexture
+Compiled from "NativeImageBackedTexture.java"
+public class net.minecraft.client.texture.NativeImageBackedTexture extends net.minecraft.client.texture.AbstractTexture implements net.minecraft.client.texture.DynamicTexture {
+  private static final org.slf4j.Logger LOGGER;
+  private net.minecraft.client.texture.NativeImage image;
+  public net.minecraft.client.texture.NativeImageBackedTexture(net.minecraft.client.texture.NativeImage);
+  public net.minecraft.client.texture.NativeImageBackedTexture(int, int, boolean);
+  public void upload();
+  public net.minecraft.client.texture.NativeImage getImage();
+  public void setImage(net.minecraft.client.texture.NativeImage);
+  public void close();
+  public void save(net.minecraft.util.Identifier, java.nio.file.Path) throws java.io.IOException;
+  private void method_22793();
+  static {};
+}
+=== net.minecraft.client.texture.NativeImage
+  public int getColorArgb(int, int);
+  public void setColorArgb(int, int, int);
+=== net.minecraft.client.option.SimpleOption
+  T value;
+  public T getValue();
+  public void setValue(T);
+=== net.minecraft.client.option.GameOptions
+  public net.minecraft.client.option.SimpleOption<java.lang.Integer> getFov();
+  public net.minecraft.client.option.SimpleOption<java.lang.Double> getFovEffectScale();
+  public net.minecraft.client.option.SimpleOption<java.lang.Double> getDamageTiltStrength();
+  public net.minecraft.client.option.SimpleOption<java.lang.Double> getGamma();
+  public net.minecraft.client.option.Perspective getPerspective();
+=== net.minecraft.client.gui.screen.Screen
+  public boolean keyPressed(int, int, int);
+  public void close();
+  public final void init(net.minecraft.client.MinecraftClient, int, int);
+  protected void init();
+  public void renderBackground(net.minecraft.client.gui.DrawContext, int, int, float);
+  protected void applyBlur();
+  protected void renderDarkening(net.minecraft.client.gui.DrawContext);
+  protected void renderDarkening(net.minecraft.client.gui.DrawContext, int, int, int, int);
+  public static void renderBackgroundTexture(net.minecraft.client.gui.DrawContext, net.minecraft.util.Identifier, int, int, float, float, int, int);
+  public boolean shouldPause();
+=== net.minecraft.client.option.KeyBinding
+Compiled from "KeyBinding.java"
+public class net.minecraft.client.option.KeyBinding implements java.lang.Comparable<net.minecraft.client.option.KeyBinding> {
+  private static final java.util.Map<java.lang.String, net.minecraft.client.option.KeyBinding> KEYS_BY_ID;
+  private static final java.util.Map<net.minecraft.client.util.InputUtil$Key, net.minecraft.client.option.KeyBinding> KEY_TO_BINDINGS;
+  public net.minecraft.client.option.KeyBinding(java.lang.String, int, java.lang.String);
+  public net.minecraft.client.option.KeyBinding(java.lang.String, net.minecraft.client.util.InputUtil$Type, int, java.lang.String);
+  public boolean wasPressed();
+  public int compareTo(net.minecraft.client.option.KeyBinding);
+  public boolean equals(net.minecraft.client.option.KeyBinding);
+  public static net.minecraft.client.option.KeyBinding byId(java.lang.String);
+=== net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+Compiled from "WorldRenderContext.java"
+public interface net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext {
+  public abstract net.minecraft.class_761 worldRenderer();
+  public abstract net.minecraft.class_9779 tickCounter();
+  public abstract boolean blockOutlines();
+  public abstract net.minecraft.class_4184 camera();
+  public abstract net.minecraft.class_757 gameRenderer();
+  public abstract org.joml.Matrix4f positionMatrix();
+  public abstract org.joml.Matrix4f projectionMatrix();
+  public abstract net.minecraft.class_638 world();
+  public abstract boolean advancedTranslucency();
+  public abstract net.minecraft.class_4597 consumers();
+  public abstract net.minecraft.class_4604 frustum();
+  public abstract net.minecraft.class_4587 matrixStack();
+  public abstract boolean translucentBlockOutline();
+}
+=== net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
+Compiled from "ClientCommandRegistrationCallback.java"
+public interface net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback {
+  public static final net.fabricmc.fabric.api.event.Event<net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback> EVENT;
+  public abstract void register(com.mojang.brigadier.CommandDispatcher<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>, net.minecraft.class_7157);
+  private static net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback lambda$static$1(net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback[]);
+  private static void lambda$static$0(net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback[], com.mojang.brigadier.CommandDispatcher, net.minecraft.class_7157);
+  static {};
+}
+=== net.minecraft.client.render.RenderTickCounter
+  public abstract float getLastFrameDuration();
+  public abstract float getTickDelta(boolean);
+=== net.minecraft.entity.LivingEntity
+  protected boolean jumping;
+  private int jumpingCooldown;
+  public java.util.Collection<net.minecraft.entity.effect.StatusEffectInstance> getStatusEffects();
+  private int getHandSwingDuration();
+  public void handleStatus(byte);
+  public void jump();
+  public boolean canSee(net.minecraft.entity.Entity);
+  public boolean canSee(net.minecraft.entity.Entity, net.minecraft.world.RaycastContext$ShapeType, net.minecraft.world.RaycastContext$FluidHandling, double);
+=== net.minecraft.entity.Entity
+  public int getTeamColorValue();
+  public net.minecraft.util.math.BlockPos getWorldSpawnPos(net.minecraft.server.world.ServerWorld, net.minecraft.util.math.BlockPos);
+  public final net.minecraft.util.math.Vec3d getLerpedPos(float);
+  public final boolean isGlowingLocal();
+  public boolean isGlowing();
+  public net.minecraft.world.World getWorld();
+=== net.minecraft.entity.effect.StatusEffectInstance
+  public net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> getEffectType();
+  public int getDuration();
+  public int getAmplifier();
+  public java.lang.String getTranslationKey();
+  private java.lang.String getDurationString();
+=== net.minecraft.client.network.PlayerListEntry
+  public int getLatency();
+  public net.minecraft.client.util.SkinTextures getSkinTextures();
+=== net.minecraft.client.util.SkinTextures
+Compiled from "SkinTextures.java"
+public final class net.minecraft.client.util.SkinTextures extends java.lang.Record {
+  private final net.minecraft.util.Identifier texture;
+  private final java.lang.String textureUrl;
+  private final net.minecraft.util.Identifier capeTexture;
+  private final net.minecraft.util.Identifier elytraTexture;
+  private final net.minecraft.client.util.SkinTextures$Model model;
+  private final boolean secure;
+  public net.minecraft.client.util.SkinTextures(net.minecraft.util.Identifier, java.lang.String, net.minecraft.util.Identifier, net.minecraft.util.Identifier, net.minecraft.client.util.SkinTextures$Model, boolean);
+  public final java.lang.String toString();
+  public final int hashCode();
+  public final boolean equals(java.lang.Object);
+  public net.minecraft.util.Identifier texture();
+  public java.lang.String textureUrl();
+  public net.minecraft.util.Identifier capeTexture();
+  public net.minecraft.util.Identifier elytraTexture();
+  public net.minecraft.client.util.SkinTextures$Model model();
+  public boolean secure();
+}
+=== net.minecraft.client.render.RenderLayer
+  public static net.minecraft.client.render.RenderLayer getGuiTexturedOverlay(net.minecraft.util.Identifier);
+  public static net.minecraft.client.render.RenderLayer getGuiTextured(net.minecraft.util.Identifier);
+=== net.minecraft.client.util.math.MatrixStack
+  public void translate(double, double, double);
+  public void translate(float, float, float);
+  public void translate(net.minecraft.util.math.Vec3d);
+  public void scale(float, float, float);
+  public void multiply(org.joml.Quaternionf);
+  public void multiply(org.joml.Quaternionf, float, float, float);
+  public void push();
+  public void pop();
+  public void multiplyPositionMatrix(org.joml.Matrix4f);
+=== net.minecraft.client.MinecraftClient
+  private void handleGlErrorByDisableVsync(int, long);
+  public void setScreen(net.minecraft.client.gui.screen.Screen);
+  public int getCurrentFps();
+  public void setScreenAndRender(net.minecraft.client.gui.screen.Screen);
+  public net.minecraft.client.network.ClientPlayNetworkHandler getNetworkHandler();
+  public boolean isInSingleplayer();
+=== net.minecraft.util.math.RotationAxis
+Compiled from "RotationAxis.java"
+public interface net.minecraft.util.math.RotationAxis {
+  public static final net.minecraft.util.math.RotationAxis NEGATIVE_X;
+  public static final net.minecraft.util.math.RotationAxis POSITIVE_X;
+  public static final net.minecraft.util.math.RotationAxis NEGATIVE_Y;
+  public static final net.minecraft.util.math.RotationAxis POSITIVE_Y;
+  public static final net.minecraft.util.math.RotationAxis NEGATIVE_Z;
+  public static final net.minecraft.util.math.RotationAxis POSITIVE_Z;
+  public static net.minecraft.util.math.RotationAxis of(org.joml.Vector3f);
+  public abstract org.joml.Quaternionf rotation(float);
+  public default org.joml.Quaternionf rotationDegrees(float);
+  private static org.joml.Quaternionf method_46350(org.joml.Vector3f, float);
+  private static org.joml.Quaternionf method_46349(float);
+  private static org.joml.Quaternionf method_46351(float);
+  private static org.joml.Quaternionf method_46352(float);
+  private static org.joml.Quaternionf method_46353(float);
+  private static org.joml.Quaternionf method_46354(float);
+  private static org.joml.Quaternionf method_46355(float);
+  static {};
+}
+=== net.minecraft.client.util.InputUtil
+  public static net.minecraft.client.util.InputUtil$Key fromKeyCode(int, int);
