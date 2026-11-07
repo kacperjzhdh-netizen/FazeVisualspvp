@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "nicevisuals",
+  "version": "${version}",
+  "name": "Nice Visuals",
+  "description": "PvP visuals: click GUI (key X), HUD modules, hit marker, target HUD.",
+  "authors": ["NiceCode"],
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": { "client": ["pl.nicevisuals.NiceVisualsClient"] },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
