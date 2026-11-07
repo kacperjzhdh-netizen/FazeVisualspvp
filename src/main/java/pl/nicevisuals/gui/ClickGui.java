@@ -65,7 +65,7 @@ public class ClickGui extends Screen {
     private NumSetting dragging;
     private int dragX, dragW;
     private long toastAt;
-    private static final float S = 1.3f;
+    private static final float S = 1.2f;
 
     public ClickGui() {
         super(Text.literal("Nice Visuals"));
@@ -99,9 +99,14 @@ public class ClickGui extends Screen {
     public void render(DrawContext ctx, int mx, int my, float delta) {
         renderBackground(ctx, mx, my, delta);
         hits.clear();
+        mx = Math.round(mx / S);
+        my = Math.round(my / S);
+        int vw = Math.round(width / S), vh = Math.round(height / S);
+        ctx.getMatrices().push();
+        ctx.getMatrices().scale(S, S, 1f);
 
-        int W = Math.min(width - 16, 580), H = Math.min(height - 16, 320);
-        int x0 = (width - W) / 2, y0 = (height - H) / 2;
+        int W = Math.min(vw - 16, 580), H = Math.min(vh - 16, 320);
+        int x0 = (vw - W) / 2, y0 = (vh - H) / 2;
         int sw = 108;
 
         // sidebar
@@ -254,6 +259,8 @@ public class ClickGui extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         if (button != 0) return super.mouseClicked(mx, my, button);
+        mx /= S;
+        my /= S;
         mx /= S;
         my /= S;
         if (openDrop != null) {
