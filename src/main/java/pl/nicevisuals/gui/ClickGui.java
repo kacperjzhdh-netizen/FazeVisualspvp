@@ -226,7 +226,7 @@ public class ClickGui extends Screen {
         long age = System.currentTimeMillis() - toastAt;
         if (toastAt == 0 || age > 2800) return;
         float a = age < 250 ? age / 250f : (age > 2300 ? (2800 - age) / 500f : 1f);
-        int w = 170, h = 36, x = width - w - 10, y = 10 - Math.round((1 - Math.min(1f, age / 250f)) * 10);
+        int w = 170, h = 36, x = vw - w - 10, y = 10 - Math.round((1 - Math.min(1f, age / 250f)) * 10);
         Draw.rrect(ctx, x, y, w, h, 8, Draw.alpha(0x55FFFFFF, a));
         Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, 7, Draw.alpha(0xEE1A2244, a));
         Draw.rrect(ctx, x + 8, y + 8, 20, 20, 10, Draw.alpha(0xFF3DDC97, a));
