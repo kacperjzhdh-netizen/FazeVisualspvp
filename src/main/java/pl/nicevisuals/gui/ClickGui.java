@@ -65,6 +65,7 @@ public class ClickGui extends Screen {
     private NumSetting dragging;
     private int dragX, dragW;
     private long toastAt;
+    private static final float S = 1.3f;
 
     public ClickGui() {
         super(Text.literal("Nice Visuals"));
@@ -99,9 +100,9 @@ public class ClickGui extends Screen {
         renderBackground(ctx, mx, my, delta);
         hits.clear();
 
-        int W = Math.min(width - 16, 440), H = Math.min(height - 16, 250);
+        int W = Math.min(width - 16, 580), H = Math.min(height - 16, 320);
         int x0 = (width - W) / 2, y0 = (height - H) / 2;
-        int sw = 96;
+        int sw = 108;
 
         // sidebar
         glass(ctx, x0, y0, sw, H, 12);
@@ -129,7 +130,7 @@ public class ClickGui extends Screen {
 
         clipY1 = y0 + 40;
         clipY2 = y0 + ch - 6;
-        ctx.enableScissor(cx, clipY1, cx + cw, clipY2);
+        ctx.enableScissor(Math.round(cx * S), Math.round(clipY1 * S), Math.round((cx + cw) * S), Math.round(clipY2 * S));
         int y = clipY1 - Math.round(scroll);
         int top = y;
         int rx = cx + cw - 14; // right edge for controls
@@ -203,7 +204,8 @@ public class ClickGui extends Screen {
                 ctx.drawTextWithShadow(textRenderer, openDrop.modes[i], dropX + 8, oy + 4, sel ? WHITE : DIM);
             }
         }
-        drawToast(ctx);
+        drawToast(ctx, vw);
+        ctx.getMatrices().pop();
         ctx.getMatrices().pop();
     }
 
@@ -215,7 +217,7 @@ public class ClickGui extends Screen {
         hits.add(new Hit(x, y, w, h, false, r, null));
     }
 
-    private void drawToast(DrawContext ctx) {
+    private void drawToast(DrawContext ctx, int vw) {
         long age = System.currentTimeMillis() - toastAt;
         if (toastAt == 0 || age > 2800) return;
         float a = age < 250 ? age / 250f : (age > 2300 ? (2800 - age) / 500f : 1f);
@@ -252,6 +254,8 @@ public class ClickGui extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         if (button != 0) return super.mouseClicked(mx, my, button);
+        mx /= S;
+        my /= S;
         if (openDrop != null) {
             for (int i = 0; i < openDrop.modes.length; i++) {
                 int oy = dropY + 2 + i * 16;
@@ -277,7 +281,7 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        if (dragging != null) { applyDrag(mx); return true; }
+        if (dragging != null) { applyDrag(mx / S); return true; }
         return super.mouseDragged(mx, my, button, dx, dy);
     }
 

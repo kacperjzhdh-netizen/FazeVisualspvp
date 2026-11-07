@@ -22,7 +22,7 @@ public class TargetEsp extends Module {
 
     private final ModeSetting style = add(new ModeSetting("Style", 0, "Brackets", "Ring", "Orbit"));
     private final ModeSetting color = add(new ModeSetting("Color", 0, "Pink", "Red", "Blue", "White"));
-    private final NumSetting thick = add(new NumSetting("Thickness", 3, 1, 6));
+    private final NumSetting thick = add(new NumSetting("Thickness", 4, 1, 10));
     private final NumSetting seconds = add(new NumSetting("Hide after s", 5, 1, 20));
     private final BoolSetting glow = add(new BoolSetting("Glow outline", false));
     private LivingEntity target;
@@ -83,7 +83,7 @@ public class TargetEsp extends Module {
         float remain = (float) (seconds.value - (System.currentTimeMillis() - lastHit) / 1000.0);
         float fade = Math.min(1f, remain / 0.5f);
         int rgb = rgb();
-        int t = thick.asInt();
+        int t = Math.max(2, Math.round((float) thick.value * 1.5f));
 
         switch (style.index) {
             case 0 -> { // corner brackets around the projected bounding box
@@ -103,7 +103,7 @@ public class TargetEsp extends Module {
                 int c = Draw.alpha(0xFF000000 | rgb, fade);
                 int outline = Draw.alpha(0xAA000000, fade);
                 for (int pass = 0; pass < 2; pass++) {
-                    int o = pass == 0 ? 1 : 0, col = pass == 0 ? outline : c;
+                    int o = pass == 0 ? 2 : 0, col = pass == 0 ? outline : c;
                     // top-left, top-right, bottom-left, bottom-right
                     ctx.fill(x1 - o, y1 - o, x1 + len + o, y1 + t + o, col);
                     ctx.fill(x1 - o, y1 - o, x1 + t + o, y1 + len + o, col);

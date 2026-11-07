@@ -60,11 +60,14 @@ public class TargetHud extends Module {
         int rgb = switch (color.index) { case 1 -> 0xE040FB; case 2 -> 0x4DA3FF; default -> 0xFF2B2B; };
         int accent = 0xFF000000 | rgb;
         boolean gear = showGear.value;
-        int w = 124, h = gear ? 58 : 38, px = x.asInt(), py = y.asInt();
+        int w = 176, h = gear ? 60 : 40, px = x.asInt(), py = y.asInt();
+        boolean wasPixel = Draw.pixel;
+        Draw.pixel = false; // this HUD is always glass
 
-        // frosted frame
-        Draw.rrectV(ctx, px, py, w, h, 6, accent, Draw.mix(accent, 0xFF000000, 0.5f));
-        Draw.rrectV(ctx, px + 1, py + 1, w - 2, h - 2, 5, 0xF0181A20, 0xF00C0D12);
+        // frosted glass frame: tinted edge, translucent body, top sheen
+        Draw.rrectV(ctx, px, py, w, h, 9, Draw.alpha(accent, 0.75f), Draw.alpha(accent, 0.25f));
+        Draw.rrectV(ctx, px + 1, py + 1, w - 2, h - 2, 8, 0xA6262C48, 0xA010142A);
+        Draw.rrectV(ctx, px + 3, py + 3, w - 6, h / 3, 6, 0x2EFFFFFF, 0x00FFFFFF);
 
         // head (shakes + flashes when hit)
         long since = now - lastHit;
@@ -88,9 +91,9 @@ public class TargetHud extends Module {
         float max = Math.max(1, target.getMaxHealth());
         shownHealth += (hp - shownHealth) * 0.2f;
         int bx = px + 38, by = py + 19, bw = w - 44, bh = 12;
-        Draw.rrect(ctx, bx, by, bw, bh, 3, 0xFF000000);
+        Draw.rrect(ctx, bx, by, bw, bh, 5, 0x99000000);
         int fill = Math.max(0, Math.min(bw - 2, Math.round((bw - 2) * (shownHealth / max))));
-        if (fill > 0) Draw.rrect(ctx, bx + 1, by + 1, fill, bh - 2, 3, accent);
+        if (fill > 0) Draw.rrectGrad(ctx, bx + 1, by + 1, fill, bh - 2, 4, accent, Draw.mix(accent, 0xFFFFFFFF, 0.35f));
         ctx.drawCenteredTextWithShadow(mc.textRenderer, Text.literal(String.valueOf(Math.round(hp))).formatted(Formatting.BOLD),
                 bx + bw / 2, by + 2, 0xFFFFFFFF);
 
@@ -99,7 +102,7 @@ public class TargetHud extends Module {
             int gx = px + 6, gy = py + 38;
             for (int i = 0; i < GEAR.length; i++) {
                 ItemStack s = target.getEquippedStack(GEAR[i]);
-                Draw.rrect(ctx, gx + i * 19 - 1, gy - 1, 18, 18, 3, 0x30FFFFFF);
+                Draw.rrect(ctx, gx + i * 19 - 1, gy - 1, 18, 18, 5, 0x30FFFFFF);
                 if (s.isEmpty()) continue;
                 ctx.drawItem(s, gx + i * 19, gy);
                 ctx.drawStackOverlay(mc.textRenderer, s, gx + i * 19, gy);
@@ -131,5 +134,6 @@ public class TargetHud extends Module {
             }
         }
         burst = false;
+        Draw.pixel = wasPixel;
     }
 }
