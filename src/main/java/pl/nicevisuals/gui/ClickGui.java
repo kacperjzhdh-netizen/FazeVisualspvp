@@ -80,9 +80,11 @@ public class ClickGui extends Screen {
         return a;
     }
 
+    /** Frosted glass panel: soft border, vertical tint gradient and a top sheen. */
     private void glass(DrawContext ctx, int x, int y, int w, int h, int r) {
-        Draw.rrect(ctx, x, y, w, h, r, 0x38FFFFFF);
-        Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, Math.max(1, r - 1), 0x9A1A2244);
+        Draw.rrectV(ctx, x, y, w, h, r, 0x70FFFFFF, 0x24FFFFFF);
+        Draw.rrectV(ctx, x + 1, y + 1, w - 2, h - 2, r - 1, 0x8A2E3A6E, 0x7A121B40);
+        Draw.rrectV(ctx, x + 3, y + 3, w - 6, Math.min(h / 3, 46), Math.max(1, r - 3), 0x2EFFFFFF, 0x00FFFFFF);
     }
 
     private void toggle(DrawContext ctx, Object key, int x, int y, boolean on) {
@@ -102,7 +104,7 @@ public class ClickGui extends Screen {
         int sw = 96;
 
         // sidebar
-        glass(ctx, x0, y0, sw, H, 10);
+        glass(ctx, x0, y0, sw, H, 12);
         ctx.drawTexture(RenderLayer::getGuiTextured, LOGO, x0 + 9, y0 + 9, 0f, 0f, 20, 20, 20, 20);
         ctx.drawTextWithShadow(textRenderer, Text.literal("Visuals").formatted(Formatting.BOLD), x0 + 35, y0 + 15, WHITE);
         int ty = y0 + 40;
@@ -120,7 +122,7 @@ public class ClickGui extends Screen {
 
         // content
         int cx = x0 + sw + 8, cw = W - sw - 8, ch = H - 30;
-        glass(ctx, cx, y0, cw, ch, 10);
+        glass(ctx, cx, y0, cw, ch, 12);
         ctx.drawTextWithShadow(textRenderer, Text.literal(tab.title).formatted(Formatting.BOLD), cx + 14, y0 + 9, WHITE);
         ctx.drawTextWithShadow(textRenderer, tab.sub, cx + 14, y0 + 21, DIM);
         ctx.fill(cx + 14, y0 + 35, cx + cw - 14, y0 + 36, 0x30FFFFFF);
