@@ -3,6 +3,7 @@ package pl.nicevisuals.module;
 import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 import pl.nicevisuals.setting.BoolSetting;
+import pl.nicevisuals.setting.ModeSetting;
 import pl.nicevisuals.setting.NumSetting;
 import pl.nicevisuals.setting.Setting;
 
@@ -36,36 +37,44 @@ public class ModuleManager {
         return out;
     }
 
+    public JsonObject toJson() {
+        JsonObject root = new JsonObject();
+        for (Module m : modules) {
+            JsonObject o = new JsonObject();
+            o.addProperty("enabled", m.isEnabled());
+            for (Setting s : m.settings) {
+                if (s instanceof BoolSetting b) o.addProperty(s.name, b.value);
+                else if (s instanceof NumSetting n) o.addProperty(s.name, n.value);
+                else if (s instanceof ModeSetting md) o.addProperty(s.name, md.index);
+            }
+            root.add(m.name, o);
+        }
+        return root;
+    }
+
+    public void fromJson(JsonObject root) {
+        for (Module m : modules) {
+            if (!root.has(m.name)) continue;
+            JsonObject o = root.getAsJsonObject(m.name);
+            for (Setting s : m.settings) {
+                if (!o.has(s.name)) continue;
+                if (s instanceof BoolSetting b) b.value = o.get(s.name).getAsBoolean();
+                else if (s instanceof NumSetting n) n.value = o.get(s.name).getAsDouble();
+                else if (s instanceof ModeSetting md) md.index = o.get(s.name).getAsInt();
+            }
+            if (o.has("enabled")) m.setEnabled(o.get("enabled").getAsBoolean());
+        }
+    }
+
     public void save() {
         try {
-            JsonObject root = new JsonObject();
-            for (Module m : modules) {
-                JsonObject o = new JsonObject();
-                o.addProperty("enabled", m.isEnabled());
-                for (Setting s : m.settings) {
-                    if (s instanceof BoolSetting b) o.addProperty(s.name, b.value);
-                    else if (s instanceof NumSetting n) o.addProperty(s.name, n.value);
-                }
-                root.add(m.name, o);
-            }
-            Files.writeString(file, new GsonBuilder().setPrettyPrinting().create().toJson(root));
+            Files.writeString(file, new GsonBuilder().setPrettyPrinting().create().toJson(toJson()));
         } catch (Exception ignored) {}
     }
 
     public void load() {
         try {
-            if (!Files.exists(file)) return;
-            JsonObject root = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
-            for (Module m : modules) {
-                if (!root.has(m.name)) continue;
-                JsonObject o = root.getAsJsonObject(m.name);
-                for (Setting s : m.settings) {
-                    if (!o.has(s.name)) continue;
-                    if (s instanceof BoolSetting b) b.value = o.get(s.name).getAsBoolean();
-                    else if (s instanceof NumSetting n) n.value = o.get(s.name).getAsDouble();
-                }
-                if (o.has("enabled")) m.setEnabled(o.get("enabled").getAsBoolean());
-            }
+            if (Files.exists(file)) fromJson(JsonParser.parseString(Files.readString(file)).getAsJsonObject());
         } catch (Exception ignored) {}
     }
 }

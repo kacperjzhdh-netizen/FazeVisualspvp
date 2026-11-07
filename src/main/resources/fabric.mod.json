@@ -5,6 +5,7 @@
   "name": "Nice Visuals",
   "description": "PvP visuals: click GUI (key X), HUD modules, hit marker, target HUD.",
   "authors": ["NiceCode"],
+  "icon": "assets/nicevisuals/icon.png",
   "license": "All-Rights-Reserved",
   "environment": "client",
   "entrypoints": { "client": ["pl.nicevisuals.NiceVisualsClient"] },
