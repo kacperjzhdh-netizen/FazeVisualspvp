@@ -44,6 +44,7 @@ public class NiceVisualsClient implements ClientModInitializer {
             if (world.isClient && entity instanceof LivingEntity le) {
                 if (modules.hitMarker.isEnabled()) modules.hitMarker.registerHit();
                 if (modules.targetHud.isEnabled()) modules.targetHud.setTarget(le);
+                if (modules.targetEsp.isEnabled()) modules.targetEsp.setTarget(le);
             }
             return ActionResult.PASS;
         });

@@ -15,14 +15,18 @@ public class ModuleManager {
     public final List<Module> modules = new ArrayList<>();
     public final HitMarker hitMarker = new HitMarker();
     public final TargetHud targetHud = new TargetHud();
+    public final TargetEsp targetEsp = new TargetEsp();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
 
     public ModuleManager() {
         modules.add(hitMarker);
         modules.add(targetHud);
+        modules.add(targetEsp);
         modules.add(new FpsHud());
         modules.add(new CpsHud());
         modules.add(new CoordsHud());
+        modules.add(new ArmorHud());
+        modules.add(new Keystrokes());
         modules.add(new Fullbright());
     }
 
