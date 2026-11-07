@@ -4,8 +4,8 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import pl.nicevisuals.NiceVisualsClient;
 import pl.nicevisuals.module.Category;
@@ -18,15 +18,20 @@ import pl.nicevisuals.setting.Setting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-/** Glass-style settings screen: sidebar, scrollable list, toggles, sliders, dropdowns, toast. */
+/** Dark glass settings screen: sidebar, search, module cards, toggles, sliders, dropdowns, toast. */
 public class ClickGui extends Screen {
     private static final Identifier LOGO = Identifier.of("nicevisuals", "textures/gui/logo.png");
-    private static final int WHITE = 0xFFFFFFFF, DIM = 0xFFB8C2E0, ACCENT_A = 0xFF7B6CF6, ACCENT_B = 0xFF4DA3FF;
+    private static final Identifier FONT = Identifier.of("nicevisuals", "ui");
+    private static final Identifier FONT_B = Identifier.of("nicevisuals", "ui_bold");
+    private static final float S = 1.2f;
+    private static final int TXT = 0xFFEDEFFA, DIM = 0xFF8E96B5, ACC_A = 0xFF7C5CFF, ACC_B = 0xFF4DA3FF;
+
     private static final Map<String, String> DESC = Map.ofEntries(
             Map.entry("Hit Marker", "Cross flash when you hit someone."),
-            Map.entry("Target HUD", "Head, name and health of your target."),
+            Map.entry("Target HUD", "Head, name, health and gear of your target."),
             Map.entry("Target ESP", "Brackets, ring or orbit on your target."),
             Map.entry("Combo", "Counts your hits in a row."),
             Map.entry("Reach", "Distance of your last hit."),
@@ -73,7 +78,8 @@ public class ClickGui extends Screen {
     private NumSetting dragging;
     private int dragX, dragW;
     private long toastAt;
-    private static final float S = 1.2f;
+    private String query = "";
+    private boolean searchFocus;
 
     public ClickGui() {
         super(Text.literal("Nice Visuals"));
@@ -82,7 +88,15 @@ public class ClickGui extends Screen {
 
     @Override public boolean shouldPause() { return false; }
 
-    /** A row is drawn only when it fits fully inside the list area (no scissor needed). */
+    // ---- text helpers (smooth TrueType font) ----
+    private Text t(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT)); }
+    private Text tb(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT_B)); }
+    private void txt(DrawContext ctx, String s, int x, int y, int color) { ctx.drawText(textRenderer, t(s), x, y, color, false); }
+    private void txtB(DrawContext ctx, String s, int x, int y, int color) { ctx.drawText(textRenderer, tb(s), x, y, color, false); }
+    private void txtC(DrawContext ctx, String s, int cx, int y, int color) {
+        ctx.drawText(textRenderer, t(s), cx - textRenderer.getWidth(t(s)) / 2, y, color, false);
+    }
+
     private boolean vis(int y, int h) { return y >= clipY1 && y + h <= clipY2; }
 
     private float smooth(Object key, float target) {
@@ -92,18 +106,22 @@ public class ClickGui extends Screen {
         return a;
     }
 
-    /** Frosted glass panel: soft border, vertical tint gradient and a top sheen. */
-    private void glass(DrawContext ctx, int x, int y, int w, int h, int r) {
-        Draw.rrectV(ctx, x, y, w, h, r, 0x70FFFFFF, 0x24FFFFFF);
-        Draw.rrectV(ctx, x + 1, y + 1, w - 2, h - 2, r - 1, 0x8A2E3A6E, 0x7A121B40);
-        Draw.rrectV(ctx, x + 3, y + 3, w - 6, Math.min(h / 3, 46), Math.max(1, r - 3), 0x2EFFFFFF, 0x00FFFFFF);
-    }
-
     private void toggle(DrawContext ctx, Object key, int x, int y, boolean on) {
         float a = smooth(key, on ? 1f : 0f);
-        Draw.rrectGrad(ctx, x, y, 28, 14, 7, Draw.mix(0xFF3A4260, ACCENT_A, a), Draw.mix(0xFF3A4260, ACCENT_B, a));
-        int kx = x + 2 + Math.round(14 * a);
-        Draw.rrect(ctx, kx, y + 2, 10, 10, 5, WHITE);
+        Draw.rrectGrad(ctx, x, y, 28, 14, 7, Draw.mix(0xFF2A2F48, ACC_A, a), Draw.mix(0xFF2A2F48, ACC_B, a));
+        Draw.rrect(ctx, x + 2 + Math.round(14 * a), y + 2, 10, 10, 5, 0xFFFFFFFF);
+    }
+
+    private List<Module> shown() {
+        List<Module> out = new ArrayList<>();
+        if (!query.isEmpty()) {
+            String q = query.toLowerCase(Locale.ROOT);
+            for (Module m : NiceVisualsClient.modules.modules)
+                if (m.name.toLowerCase(Locale.ROOT).contains(q)) out.add(m);
+        } else if (tab.cat != null) {
+            out.addAll(NiceVisualsClient.modules.in(tab.cat));
+        }
+        return out;
     }
 
     @Override
@@ -116,110 +134,128 @@ public class ClickGui extends Screen {
         ctx.getMatrices().push();
         ctx.getMatrices().scale(S, S, 1f);
 
-        int W = Math.min(vw - 16, 580), H = Math.min(vh - 16, 320);
+        int W = Math.min(vw - 16, 560), H = Math.min(vh - 16, 330);
         int x0 = (vw - W) / 2, y0 = (vh - H) / 2;
-        int sw = 108;
+        int sb = 122;
 
-        // sidebar
-        glass(ctx, x0, y0, sw, H, 12);
-        ctx.drawTexture(RenderLayer::getGuiTextured, LOGO, x0 + 9, y0 + 9, 0f, 0f, 20, 20, 20, 20);
-        ctx.drawTextWithShadow(textRenderer, Text.literal("Visuals").formatted(Formatting.BOLD), x0 + 35, y0 + 15, WHITE);
-        int ty = y0 + 40;
-        for (Tab t : Tab.values()) {
-            int tx = x0 + 6, tw = sw - 12;
-            boolean sel = t == tab, hover = mx >= tx && mx < tx + tw && my >= ty && my < ty + 22;
-            if (sel) Draw.rrectGrad(ctx, tx, ty, tw, 22, 7, ACCENT_A, 0xFF5B8CF0);
-            else if (hover) Draw.rrect(ctx, tx, ty, tw, 22, 7, 0x22FFFFFF);
-            ctx.drawTextWithShadow(textRenderer, t.title, tx + 12, ty + 7, sel ? WHITE : DIM);
-            final Tab target = t;
-            hits.add(new Hit(tx, ty, tw, 22, false, () -> { tab = target; scroll = 0; openDrop = null; }, null));
-            ty += 26;
+        // window
+        Draw.rrectV(ctx, x0, y0, W, H, 16, 0x48FFFFFF, 0x14FFFFFF);
+        Draw.rrectV(ctx, x0 + 1, y0 + 1, W - 2, H - 2, 15, 0xD40E1224, 0xD4080A17);
+        Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 46, 13, 0x16FFFFFF, 0x00FFFFFF);
+        ctx.fill(x0 + sb, y0 + 10, x0 + sb + 1, y0 + H - 10, 0x16FFFFFF);
+
+        // sidebar: logo + tabs
+        ctx.drawTexture(RenderLayer::getGuiTextured, LOGO, x0 + 16, y0 + 14, 0f, 0f, 22, 22, 22, 22);
+        txtB(ctx, "Nice Visuals", x0 + 44, y0 + 19, TXT);
+        int ty = y0 + 54;
+        for (Tab tb : Tab.values()) {
+            if (tb == Tab.CLIENT) { txt(ctx, "GENERAL", x0 + 18, ty + 8, 0xFF6C7494); ty += 26; }
+            int tx = x0 + 10, tw = sb - 20;
+            boolean sel = tb == tab && query.isEmpty();
+            boolean hover = mx >= tx && mx < tx + tw && my >= ty && my < ty + 24;
+            if (sel) Draw.rrect(ctx, tx, ty, tw, 24, 9, 0x3A7C5CFF);
+            else if (hover) Draw.rrect(ctx, tx, ty, tw, 24, 9, 0x12FFFFFF);
+            txt(ctx, tb.title, tx + 14, ty + 8, sel ? TXT : DIM);
+            if (sel) Draw.rrect(ctx, tx + tw - 14, ty + 9, 6, 6, 3, 0xFFA77BFF);
+            final Tab target = tb;
+            hits.add(new Hit(tx, ty, tw, 24, false, () -> { tab = target; query = ""; scroll = 0; openDrop = null; }, null));
+            ty += 28;
         }
-        ctx.drawTextWithShadow(textRenderer, "v1.0.0", x0 + 12, y0 + H - 16, 0xFF8A94B8);
+        txt(ctx, "v1.0.0", x0 + 18, y0 + H - 22, 0xFF6C7494);
 
-        // content
-        int cx = x0 + sw + 8, cw = W - sw - 8, ch = H - 30;
-        glass(ctx, cx, y0, cw, ch, 12);
-        ctx.drawTextWithShadow(textRenderer, Text.literal(tab.title).formatted(Formatting.BOLD), cx + 14, y0 + 9, WHITE);
-        ctx.drawTextWithShadow(textRenderer, tab.sub, cx + 14, y0 + 21, DIM);
-        ctx.fill(cx + 14, y0 + 35, cx + cw - 14, y0 + 36, 0x30FFFFFF);
+        // content header
+        int cx = x0 + sb + 14, cr = x0 + W - 14, cw = cr - cx;
+        boolean searching = !query.isEmpty();
+        txtB(ctx, searching ? "Search results" : tab.title, cx, y0 + 14, TXT);
+        txt(ctx, searching ? shown().size() + " modules found" : tab.sub, cx, y0 + 27, DIM);
 
-        clipY1 = y0 + 40;
-        clipY2 = y0 + ch - 6;
+        // search box
+        int sbx = cr - 150, sby = y0 + 12, sbw = 150, sbh = 24;
+        Draw.rrect(ctx, sbx, sby, sbw, sbh, 12, searchFocus ? 0x667C5CFF : 0x30FFFFFF);
+        Draw.rrect(ctx, sbx + 1, sby + 1, sbw - 2, sbh - 2, 11, 0xF0080A16);
+        String shownQ = query.isEmpty() && !searchFocus ? "Search modules" : query + (searchFocus && (System.currentTimeMillis() / 500) % 2 == 0 ? "|" : "");
+        txt(ctx, shownQ, sbx + 12, sby + 8, query.isEmpty() ? DIM : TXT);
+        hits.add(new Hit(sbx, sby, sbw, sbh, false, () -> searchFocus = true, null));
+
+        // module cards
+        clipY1 = y0 + 46;
+        clipY2 = y0 + H - 38;
         int y = clipY1 - Math.round(scroll);
         int top = y;
-        int rx = cx + cw - 14; // right edge for controls
-        if (tab == Tab.ABOUT) {
-            ctx.drawTextWithShadow(textRenderer, "NiceVisuals v1.0.0", cx + 14, y + 4, WHITE);
-            ctx.drawTextWithShadow(textRenderer, "Press X in game to open this menu.", cx + 14, y + 18, DIM);
-            ctx.drawTextWithShadow(textRenderer, "Settings are saved in config/nicevisuals.json", cx + 14, y + 30, DIM);
-            ctx.drawTextWithShadow(textRenderer, "Made by NiceCode.", cx + 14, y + 42, DIM);
-            y += 60;
+        int rx = cr - 12;
+        if (tab == Tab.ABOUT && !searching) {
+            txtB(ctx, "NiceVisuals v1.0.0", cx, y + 6, TXT);
+            txt(ctx, "Press X in game to open this menu.", cx, y + 22, DIM);
+            txt(ctx, "Settings are saved in config/nicevisuals.json", cx, y + 36, DIM);
+            txt(ctx, "Made by NiceCode.", cx, y + 50, DIM);
+            y += 64;
         } else {
-            for (Module m : NiceVisualsClient.modules.in(tab.cat)) {
-                if (vis(y, 28)) {
-                ctx.drawTextWithShadow(textRenderer, m.name, cx + 14, y + 4, WHITE);
-                ctx.drawTextWithShadow(textRenderer, DESC.getOrDefault(m.name, ""), cx + 14, y + 15, 0xFF9AA5C8);
-                toggle(ctx, m, rx - 28, y + 7, m.isEnabled());
-                hits.add(new Hit(cx + 10, y, cw - 20, 28, true, m::toggle, null));
+            for (Module m : shown()) {
+                if (vis(y, 32)) {
+                    boolean hov = mx >= cx && mx < cr && my >= y && my < y + 32;
+                    Draw.rrect(ctx, cx, y, cw, 32, 10, hov ? 0x1EFFFFFF : 0x12FFFFFF);
+                    txt(ctx, m.name, cx + 14, y + 6, TXT);
+                    txt(ctx, DESC.getOrDefault(m.name, ""), cx + 14, y + 18, DIM);
+                    toggle(ctx, m, rx - 28, y + 9, m.isEnabled());
+                    hits.add(new Hit(cx, y, cw, 32, true, m::toggle, null));
                 }
-                y += 30;
+                y += 34;
                 for (Setting s : m.settings) {
                     if (vis(y, 22)) {
-                    ctx.drawTextWithShadow(textRenderer, s.name, cx + 26, y + 7, DIM);
-                    if (s instanceof BoolSetting b) {
-                        toggle(ctx, b, rx - 28, y + 4, b.value);
-                        hits.add(new Hit(cx + 10, y, cw - 20, 22, true, () -> b.value = !b.value, null));
-                    } else if (s instanceof NumSetting n) {
-                        int sx = rx - 120, swid = 88;
-                        Draw.rrect(ctx, sx, y + 9, swid, 4, 2, 0x44FFFFFF);
-                        float f = (float) ((n.value - n.min) / (n.max - n.min));
-                        int fw = Math.max(4, Math.round(swid * f));
-                        Draw.rrectGrad(ctx, sx, y + 9, fw, 4, 2, ACCENT_A, ACCENT_B);
-                        Draw.rrect(ctx, sx + fw - 4, y + 6, 8, 10, 4, WHITE);
-                        ctx.drawTextWithShadow(textRenderer, String.valueOf(n.asInt()), rx - 26, y + 7, WHITE);
-                        hits.add(new Hit(sx - 4, y + 3, swid + 8, 16, true, null, n));
-                    } else if (s instanceof ModeSetting md) {
-                        int bx = rx - 72, bw = 72;
-                        Draw.rrect(ctx, bx, y + 3, bw, 16, 6, 0x33FFFFFF);
-                        ctx.drawTextWithShadow(textRenderer, md.get(), bx + 7, y + 7, WHITE);
-                        ctx.drawTextWithShadow(textRenderer, openDrop == md ? "^" : "v", bx + bw - 12, y + 7, DIM);
-                        final int by = y + 19;
-                        hits.add(new Hit(bx, y + 3, bw, 16, true, () -> {
-                            if (openDrop == md) openDrop = null;
-                            else { openDrop = md; dropX = bx; dropY = by; dropW = bw; }
-                        }, null));
-                    }
+                        txt(ctx, s.name, cx + 26, y + 7, DIM);
+                        if (s instanceof BoolSetting b) {
+                            toggle(ctx, b, rx - 28, y + 4, b.value);
+                            hits.add(new Hit(cx, y, cw, 22, true, () -> b.value = !b.value, null));
+                        } else if (s instanceof NumSetting n) {
+                            int sx = rx - 126, swid = 92;
+                            Draw.rrect(ctx, sx, y + 9, swid, 4, 2, 0x30FFFFFF);
+                            float f = (float) ((n.value - n.min) / (n.max - n.min));
+                            int fw = Math.max(4, Math.round(swid * f));
+                            Draw.rrectGrad(ctx, sx, y + 9, fw, 4, 2, ACC_A, ACC_B);
+                            Draw.rrect(ctx, sx + fw - 4, y + 6, 8, 10, 4, 0xFFFFFFFF);
+                            txt(ctx, String.valueOf(n.asInt()), rx - 26, y + 7, TXT);
+                            hits.add(new Hit(sx - 4, y + 3, swid + 8, 16, true, null, n));
+                        } else if (s instanceof ModeSetting md) {
+                            int bx = rx - 76, bw = 76;
+                            Draw.rrect(ctx, bx, y + 3, bw, 16, 8, 0x26FFFFFF);
+                            txt(ctx, md.get(), bx + 10, y + 7, TXT);
+                            txt(ctx, openDrop == md ? "^" : "v", bx + bw - 14, y + 7, DIM);
+                            final int by = y + 19;
+                            hits.add(new Hit(bx, y + 3, bw, 16, true, () -> {
+                                if (openDrop == md) openDrop = null;
+                                else { openDrop = md; dropX = bx; dropY = by; dropW = bw; }
+                            }, null));
+                        }
                     }
                     y += 24;
                 }
-                ctx.fill(cx + 14, y + 1, cx + cw - 14, y + 2, 0x18FFFFFF);
-                y += 5;
+                y += 6;
             }
         }
         maxScroll = Math.max(0, (y - top) - (clipY2 - clipY1));
         scroll = Math.max(0, Math.min(scroll, maxScroll));
 
-        // bottom buttons: Reset, Cancel, Apply
-        int by = y0 + ch + 4, bw = 62, bh = 22, gap = 6;
-        int bx = cx + cw - (bw * 3 + gap * 2);
+        // bottom buttons
+        int by = y0 + H - 34, bw = 64, bh = 24, gap = 6;
+        int bx = cr - (bw * 3 + gap * 2);
         button(ctx, mx, my, bx, by, bw, bh, "Reset", false, this::doReset);
         button(ctx, mx, my, bx + bw + gap, by, bw, bh, "Cancel", false, this::doCancel);
         button(ctx, mx, my, bx + (bw + gap) * 2, by, bw, bh, "Apply", true, this::doApply);
 
-        // overlays (drawn above everything else)
+        // overlays
         ctx.getMatrices().push();
         ctx.getMatrices().translate(0, 0, 300);
         if (openDrop != null) {
-            int oh = openDrop.modes.length * 16 + 4;
-            glass(ctx, dropX, dropY, dropW, oh, 6);
+            int oh = openDrop.modes.length * 18 + 6;
+            Draw.rrect(ctx, dropX, dropY, dropW, oh, 8, 0x44FFFFFF);
+            Draw.rrect(ctx, dropX + 1, dropY + 1, dropW - 2, oh - 2, 7, 0xF2101428);
             for (int i = 0; i < openDrop.modes.length; i++) {
-                int oy = dropY + 2 + i * 16;
+                int oy = dropY + 3 + i * 18;
                 boolean sel = i == openDrop.index;
-                boolean hov = mx >= dropX && mx < dropX + dropW && my >= oy && my < oy + 16;
-                if (sel) Draw.rrectGrad(ctx, dropX + 2, oy, dropW - 4, 16, 5, ACCENT_A, 0xFF5B8CF0);
-                else if (hov) Draw.rrect(ctx, dropX + 2, oy, dropW - 4, 16, 5, 0x22FFFFFF);
-                ctx.drawTextWithShadow(textRenderer, openDrop.modes[i], dropX + 8, oy + 4, sel ? WHITE : DIM);
+                boolean hov = mx >= dropX && mx < dropX + dropW && my >= oy && my < oy + 18;
+                if (sel) Draw.rrectGrad(ctx, dropX + 3, oy, dropW - 6, 18, 7, ACC_A, ACC_B);
+                else if (hov) Draw.rrect(ctx, dropX + 3, oy, dropW - 6, 18, 7, 0x20FFFFFF);
+                txt(ctx, openDrop.modes[i], dropX + 10, oy + 5, sel ? 0xFFFFFFFF : DIM);
             }
         }
         drawToast(ctx, vw);
@@ -229,9 +265,12 @@ public class ClickGui extends Screen {
 
     private void button(DrawContext ctx, int mx, int my, int x, int y, int w, int h, String label, boolean primary, Runnable r) {
         boolean hover = mx >= x && mx < x + w && my >= y && my < y + h;
-        if (primary) Draw.rrectGrad(ctx, x, y, w, h, 7, hover ? 0xFF8F82FF : ACCENT_A, hover ? 0xFF6DB6FF : ACCENT_B);
-        else { Draw.rrect(ctx, x, y, w, h, 7, 0x38FFFFFF); Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, 6, hover ? 0xB0303A60 : 0x9A1A2244); }
-        ctx.drawCenteredTextWithShadow(textRenderer, label, x + w / 2, y + 7, WHITE);
+        if (primary) Draw.rrectGrad(ctx, x, y, w, h, 10, hover ? 0xFF907BFF : ACC_A, hover ? 0xFF6DB6FF : ACC_B);
+        else {
+            Draw.rrect(ctx, x, y, w, h, 10, 0x30FFFFFF);
+            Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, 9, hover ? 0xF0262C48 : 0xF0141830);
+        }
+        txtC(ctx, label, x + w / 2, y + 8, 0xFFFFFFFF);
         hits.add(new Hit(x, y, w, h, false, r, null));
     }
 
@@ -239,27 +278,21 @@ public class ClickGui extends Screen {
         long age = System.currentTimeMillis() - toastAt;
         if (toastAt == 0 || age > 2800) return;
         float a = age < 250 ? age / 250f : (age > 2300 ? (2800 - age) / 500f : 1f);
-        int w = 170, h = 36, x = vw - w - 10, y = 10 - Math.round((1 - Math.min(1f, age / 250f)) * 10);
-        Draw.rrect(ctx, x, y, w, h, 8, Draw.alpha(0x55FFFFFF, a));
-        Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, 7, Draw.alpha(0xEE1A2244, a));
-        Draw.rrect(ctx, x + 8, y + 8, 20, 20, 10, Draw.alpha(0xFF3DDC97, a));
-        int ck = Draw.alpha(WHITE, a);
-        ctx.fill(x + 13, y + 18, x + 15, y + 20, ck);
-        ctx.fill(x + 15, y + 20, x + 17, y + 22, ck);
-        for (int i = 0; i < 5; i++) ctx.fill(x + 17 + i, y + 20 - i, x + 19 + i, y + 22 - i, ck);
-        ctx.drawTextWithShadow(textRenderer, Text.literal("Settings Saved!").formatted(Formatting.BOLD), x + 36, y + 9, Draw.alpha(WHITE, a));
-        ctx.drawTextWithShadow(textRenderer, "Your changes have been applied.", x + 36, y + 21, Draw.alpha(DIM, a));
+        int w = 176, h = 38, x = vw - w - 10, y = 10 - Math.round((1 - Math.min(1f, age / 250f)) * 10);
+        Draw.rrect(ctx, x, y, w, h, 12, Draw.alpha(0x50FFFFFF, a));
+        Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, 11, Draw.alpha(0xF00E1224, a));
+        Draw.rrect(ctx, x + 9, y + 9, 20, 20, 10, Draw.alpha(0xFF3DDC97, a));
+        int ck = Draw.alpha(0xFFFFFFFF, a);
+        ctx.fill(x + 14, y + 19, x + 16, y + 21, ck);
+        ctx.fill(x + 16, y + 21, x + 18, y + 23, ck);
+        for (int i = 0; i < 5; i++) ctx.fill(x + 18 + i, y + 21 - i, x + 20 + i, y + 23 - i, ck);
+        ctx.drawText(textRenderer, tb("Settings Saved!"), x + 38, y + 9, Draw.alpha(TXT, a), false);
+        ctx.drawText(textRenderer, t("Your changes have been applied."), x + 38, y + 21, Draw.alpha(DIM, a), false);
     }
 
-    private void doApply() {
-        NiceVisualsClient.modules.save();
-        toastAt = System.currentTimeMillis();
-    }
+    private void doApply() { NiceVisualsClient.modules.save(); toastAt = System.currentTimeMillis(); }
 
-    private void doCancel() {
-        NiceVisualsClient.modules.fromJson(snapshot);
-        close();
-    }
+    private void doCancel() { NiceVisualsClient.modules.fromJson(snapshot); close(); }
 
     private void doReset() {
         if (tab.cat == null) return;
@@ -274,16 +307,15 @@ public class ClickGui extends Screen {
         if (button != 0) return super.mouseClicked(mx, my, button);
         mx /= S;
         my /= S;
-        mx /= S;
-        my /= S;
         if (openDrop != null) {
             for (int i = 0; i < openDrop.modes.length; i++) {
-                int oy = dropY + 2 + i * 16;
-                if (mx >= dropX && mx < dropX + dropW && my >= oy && my < oy + 16) { openDrop.index = i; break; }
+                int oy = dropY + 3 + i * 18;
+                if (mx >= dropX && mx < dropX + dropW && my >= oy && my < oy + 18) { openDrop.index = i; break; }
             }
             openDrop = null;
             return true;
         }
+        searchFocus = false;
         for (Hit h : hits) {
             if (mx < h.x() || mx >= h.x() + h.w() || my < h.y() || my >= h.y() + h.h()) continue;
             if (h.scrolled() && (my < clipY1 || my >= clipY2)) continue;
@@ -291,7 +323,7 @@ public class ClickGui extends Screen {
             else h.action().run();
             return true;
         }
-        return super.mouseClicked(mx, my, button);
+        return super.mouseClicked(mx * S, my * S, button);
     }
 
     private void applyDrag(double mx) {
@@ -313,9 +345,28 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double hAmount, double vAmount) {
-        scroll = Math.max(0, Math.min(maxScroll, scroll - (float) vAmount * 14f));
+        scroll = Math.max(0, Math.min(maxScroll, scroll - (float) vAmount * 18f));
         openDrop = null;
         return true;
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (searchFocus && chr >= 32 && chr != 127 && query.length() < 24) {
+            query += chr;
+            scroll = 0;
+            return true;
+        }
+        return super.charTyped(chr, modifiers);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (searchFocus) {
+            if (keyCode == 259 && !query.isEmpty()) { query = query.substring(0, query.length() - 1); scroll = 0; return true; }
+            if (keyCode == 256 || keyCode == 257) { searchFocus = false; return true; }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

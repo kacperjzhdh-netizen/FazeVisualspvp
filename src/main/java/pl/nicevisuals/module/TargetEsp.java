@@ -22,7 +22,7 @@ public class TargetEsp extends Module {
 
     private final ModeSetting style = add(new ModeSetting("Style", 0, "Brackets", "Ring", "Orbit"));
     private final ModeSetting color = add(new ModeSetting("Color", 0, "Pink", "Red", "Blue", "White"));
-    private final NumSetting thick = add(new NumSetting("Thickness", 5, 1, 12));
+    private final NumSetting thick = add(new NumSetting("Thickness", 6, 1, 14));
     private final NumSetting seconds = add(new NumSetting("Hide after s", 5, 1, 20));
     private final BoolSetting glow = add(new BoolSetting("Glow outline", false));
     private LivingEntity target;
@@ -83,7 +83,7 @@ public class TargetEsp extends Module {
         float remain = (float) (seconds.value - (System.currentTimeMillis() - lastHit) / 1000.0);
         float fade = Math.min(1f, remain / 0.5f);
         int rgb = rgb();
-        int t = Math.max(3, Math.round((float) thick.value * 2.2f));
+        int t = Math.max(4, Math.round((float) thick.value * 3.0f));
 
         switch (style.index) {
             case 0 -> { // corner brackets around the projected bounding box
