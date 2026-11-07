@@ -45,7 +45,7 @@ public class ClickGui extends Screen {
             Map.entry("Clock", "Show the current time."),
             Map.entry("Potion HUD", "Show active potion effects."),
             Map.entry("Fullbright", "See clearly in the dark."),
-            Map.entry("Interface", "Switch the menu look: Glass or Pixel."),
+            Map.entry("Interface", "Menu look: Flat, Glass or Pixel."),
             Map.entry("Direction", "Show where you are facing."),
             Map.entry("Memory", "Show RAM used by the game."),
             Map.entry("Biome", "Show the biome you are in."),
@@ -53,7 +53,14 @@ public class ClickGui extends Screen {
             Map.entry("World Time", "Show the in-game time of day."),
             Map.entry("Item Counter", "Totems, gapples and pearls you carry."),
             Map.entry("Hurt Flash", "Red edge flash when you take damage."),
-            Map.entry("Low Health", "Pulsing red edges at low health."));
+            Map.entry("Low Health", "Pulsing red edges at low health."),
+            Map.entry("Hit Sound", "Play a sound every time you hit."),
+            Map.entry("Kill Counter", "Counts your kills."),
+            Map.entry("Status", "Show sprinting, sneaking or swimming."),
+            Map.entry("Day Counter", "Show the world day number."),
+            Map.entry("Light Level", "Show the light level where you stand."),
+            Map.entry("Time Changer", "Force a fixed time of day (client only)."),
+            Map.entry("Weather", "Remove rain and thunder (client only)."));
 
     private enum Tab {
         COMBAT("Combat", "Targeting and hit feedback.", Category.COMBAT),
@@ -139,9 +146,13 @@ public class ClickGui extends Screen {
         int sb = 122;
 
         // window
-        Draw.rrectV(ctx, x0, y0, W, H, 16, 0x48FFFFFF, 0x14FFFFFF);
-        Draw.rrectV(ctx, x0 + 1, y0 + 1, W - 2, H - 2, 15, 0xD40E1224, 0xD4080A17);
-        Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 46, 13, 0x16FFFFFF, 0x00FFFFFF);
+        if (Draw.flat) {
+            Draw.rrect(ctx, x0, y0, W, H, 8, 0xFF0D101C);
+        } else {
+            Draw.rrectV(ctx, x0, y0, W, H, 16, 0x48FFFFFF, 0x14FFFFFF);
+            Draw.rrectV(ctx, x0 + 1, y0 + 1, W - 2, H - 2, 15, 0xD40E1224, 0xD4080A17);
+            Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 46, 13, 0x16FFFFFF, 0x00FFFFFF);
+        }
         ctx.fill(x0 + sb, y0 + 10, x0 + sb + 1, y0 + H - 10, 0x16FFFFFF);
 
         // sidebar: logo + tabs

@@ -19,6 +19,8 @@ public class ModuleManager {
     public final TargetEsp targetEsp = new TargetEsp();
     public final ComboCounter combo = new ComboCounter();
     public final ReachDisplay reach = new ReachDisplay();
+    public final HitSound hitSound = new HitSound();
+    public final MoreModules.KillCounter kills = new MoreModules.KillCounter();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
 
     public ModuleManager() {
@@ -27,6 +29,8 @@ public class ModuleManager {
         modules.add(targetEsp);
         modules.add(combo);
         modules.add(reach);
+        modules.add(hitSound);
+        modules.add(kills);
         modules.add(new FpsHud());
         modules.add(new CpsHud());
         modules.add(new CoordsHud());
@@ -44,6 +48,11 @@ public class ModuleManager {
         modules.add(new InfoHuds.ItemCounter());
         modules.add(new InfoHuds.HurtFlash());
         modules.add(new InfoHuds.LowHealth());
+        modules.add(new MoreModules.Status());
+        modules.add(new MoreModules.DayCounter());
+        modules.add(new MoreModules.LightLevel());
+        modules.add(new MoreModules.TimeChanger());
+        modules.add(new MoreModules.Weather());
         modules.add(new Fullbright());
         Interface ui = new Interface();
         modules.add(ui);

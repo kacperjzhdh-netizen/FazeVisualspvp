@@ -6,6 +6,8 @@ import net.minecraft.client.gui.DrawContext;
 public final class Draw {
     /** When true all rounded shapes become square (pixel look). */
     public static boolean pixel;
+    /** When true gradients collapse to solid colors and corners are small (flat look). */
+    public static boolean flat;
 
     private Draw() {}
 
@@ -17,7 +19,11 @@ public final class Draw {
         return (float) (r - Math.sqrt(Math.max(0, r * r - d * d)));
     }
 
-    private static int radius(int r, int w, int h) { return pixel ? 0 : Math.max(0, Math.min(r, Math.min(w, h) / 2)); }
+    private static int radius(int r, int w, int h) {
+        if (pixel) return 0;
+        if (flat) r = Math.min(r, 6);
+        return Math.max(0, Math.min(r, Math.min(w, h) / 2));
+    }
 
     public static void rrect(DrawContext ctx, int x, int y, int w, int h, int r, int color) {
         rrectV(ctx, x, y, w, h, r, color, color);
@@ -26,6 +32,7 @@ public final class Draw {
     /** Vertical gradient (top -> bottom) rounded rectangle with soft edges. */
     public static void rrectV(DrawContext ctx, int x, int y, int w, int h, int r, int top, int bottom) {
         if (w <= 0 || h <= 0) return;
+        if (flat) bottom = top;
         r = radius(r, w, h);
         for (int i = 0; i < h; i++) {
             float in = inset(i, h, r);
@@ -44,6 +51,7 @@ public final class Draw {
     /** Horizontal gradient (left -> right) rounded rectangle with soft edges. */
     public static void rrectGrad(DrawContext ctx, int x, int y, int w, int h, int r, int c1, int c2) {
         if (w <= 0 || h <= 0) return;
+        if (flat) c2 = c1;
         r = radius(r, w, h);
         for (int i = 0; i < w; i++) {
             float in = inset(i, w, r);
