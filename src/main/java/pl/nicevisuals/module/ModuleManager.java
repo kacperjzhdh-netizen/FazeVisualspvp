@@ -17,18 +17,29 @@ public class ModuleManager {
     public final HitMarker hitMarker = new HitMarker();
     public final TargetHud targetHud = new TargetHud();
     public final TargetEsp targetEsp = new TargetEsp();
+    public final ComboCounter combo = new ComboCounter();
+    public final ReachDisplay reach = new ReachDisplay();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
 
     public ModuleManager() {
         modules.add(hitMarker);
         modules.add(targetHud);
         modules.add(targetEsp);
+        modules.add(combo);
+        modules.add(reach);
         modules.add(new FpsHud());
         modules.add(new CpsHud());
         modules.add(new CoordsHud());
         modules.add(new ArmorHud());
         modules.add(new Keystrokes());
+        modules.add(new PingHud());
+        modules.add(new SpeedHud());
+        modules.add(new ClockHud());
+        modules.add(new PotionHud());
         modules.add(new Fullbright());
+        Interface ui = new Interface();
+        modules.add(ui);
+        ui.setEnabled(true);
     }
 
     public List<Module> in(Category c) {

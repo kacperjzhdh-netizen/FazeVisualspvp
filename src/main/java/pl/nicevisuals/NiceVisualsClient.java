@@ -4,6 +4,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import pl.nicevisuals.module.TargetEsp;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -40,9 +42,19 @@ public class NiceVisualsClient implements ClientModInitializer {
             for (Module m : modules.modules) if (m.isEnabled()) m.onHud(ctx, mc);
         });
 
+        WorldRenderEvents.END.register(ctx -> {
+            TargetEsp.PROJ.set(ctx.projectionMatrix());
+            TargetEsp.VIEW.set(ctx.positionMatrix());
+            TargetEsp.cam = ctx.camera().getPos();
+            TargetEsp.tickDelta = ctx.tickCounter().getTickDelta(false);
+            TargetEsp.valid = true;
+        });
+
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
             if (world.isClient && entity instanceof LivingEntity le) {
                 if (modules.hitMarker.isEnabled()) modules.hitMarker.registerHit();
+                if (modules.combo.isEnabled()) modules.combo.registerHit();
+                if (modules.reach.isEnabled()) modules.reach.registerHit(player.distanceTo(le));
                 if (modules.targetHud.isEnabled()) modules.targetHud.setTarget(le);
                 if (modules.targetEsp.isEnabled()) modules.targetEsp.setTarget(le);
             }

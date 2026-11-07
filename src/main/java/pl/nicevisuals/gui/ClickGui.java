@@ -24,21 +24,29 @@ import java.util.Map;
 public class ClickGui extends Screen {
     private static final Identifier LOGO = Identifier.of("nicevisuals", "textures/gui/logo.png");
     private static final int WHITE = 0xFFFFFFFF, DIM = 0xFFB8C2E0, ACCENT_A = 0xFF7B6CF6, ACCENT_B = 0xFF4DA3FF;
-    private static final Map<String, String> DESC = Map.of(
-            "Hit Marker", "Cross flash when you hit someone.",
-            "Target HUD", "Name and health of your target.",
-            "Target ESP", "Glow outline on your last target.",
-            "FPS", "Show frames per second.",
-            "CPS", "Show clicks per second.",
-            "Coords", "Show your XYZ position.",
-            "Armor HUD", "Show worn armor and durability.",
-            "Keystrokes", "Show WASD and jump keys.",
-            "Fullbright", "See clearly in the dark.");
+    private static final Map<String, String> DESC = Map.ofEntries(
+            Map.entry("Hit Marker", "Cross flash when you hit someone."),
+            Map.entry("Target HUD", "Head, name and health of your target."),
+            Map.entry("Target ESP", "Brackets, ring or orbit on your target."),
+            Map.entry("Combo", "Counts your hits in a row."),
+            Map.entry("Reach", "Distance of your last hit."),
+            Map.entry("FPS", "Show frames per second."),
+            Map.entry("CPS", "Show clicks per second."),
+            Map.entry("Coords", "Show your XYZ position."),
+            Map.entry("Armor HUD", "Show worn armor and durability."),
+            Map.entry("Keystrokes", "Show WASD and jump keys."),
+            Map.entry("Ping", "Show your latency."),
+            Map.entry("Speed", "Show your speed in blocks/s."),
+            Map.entry("Clock", "Show the current time."),
+            Map.entry("Potion HUD", "Show active potion effects."),
+            Map.entry("Fullbright", "See clearly in the dark."),
+            Map.entry("Interface", "Switch the menu look: Glass or Pixel."));
 
     private enum Tab {
         COMBAT("Combat", "Targeting and hit feedback.", Category.COMBAT),
         HUD("HUD", "Information on your screen.", Category.HUD),
         WORLD("World", "How the world looks.", Category.WORLD),
+        CLIENT("Client", "Menu and mod settings.", Category.CLIENT),
         ABOUT("About", "NiceVisuals.", null);
         final String title, sub; final Category cat;
         Tab(String t, String s, Category c) { title = t; sub = s; cat = c; }
