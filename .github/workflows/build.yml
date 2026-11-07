@@ -1,5 +1,7 @@
 name: build
 on: [push, workflow_dispatch]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,3 +16,9 @@ jobs:
         with:
           name: NiceVisuals
           path: build/libs/*.jar
+      - name: Publish jar to branch
+        run: |
+          mkdir /tmp/out && cp build/libs/nicevisuals-*.jar /tmp/out/ && rm -f /tmp/out/*-sources.jar
+          git config user.name "github-actions" && git config user.email "actions@github.com"
+          git checkout --orphan jar && git rm -rf -q --cached . && find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp /tmp/out/*.jar . && git add -A && git commit -q -m "built jar" && git push -f origin jar
