@@ -22,7 +22,7 @@ public class TargetEsp extends Module {
 
     private final ModeSetting style = add(new ModeSetting("Style", 0, "Brackets", "Ring", "Orbit"));
     private final ModeSetting color = add(new ModeSetting("Color", 0, "Pink", "Red", "Blue", "White"));
-    private final NumSetting thick = add(new NumSetting("Thickness", 4, 1, 10));
+    private final NumSetting thick = add(new NumSetting("Thickness", 5, 1, 12));
     private final NumSetting seconds = add(new NumSetting("Hide after s", 5, 1, 20));
     private final BoolSetting glow = add(new BoolSetting("Glow outline", false));
     private LivingEntity target;
@@ -83,7 +83,7 @@ public class TargetEsp extends Module {
         float remain = (float) (seconds.value - (System.currentTimeMillis() - lastHit) / 1000.0);
         float fade = Math.min(1f, remain / 0.5f);
         int rgb = rgb();
-        int t = Math.max(2, Math.round((float) thick.value * 1.5f));
+        int t = Math.max(3, Math.round((float) thick.value * 2.2f));
 
         switch (style.index) {
             case 0 -> { // corner brackets around the projected bounding box
@@ -98,8 +98,8 @@ public class TargetEsp extends Module {
                     minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
                 }
                 if (ok < 8) return;
-                int x1 = Math.round(minX) - 2, y1 = Math.round(minY) - 2, x2 = Math.round(maxX) + 2, y2 = Math.round(maxY) + 2;
-                int len = Math.max(8, Math.round(Math.min(x2 - x1, y2 - y1) * 0.28f));
+                int x1 = Math.round(minX) - 8, y1 = Math.round(minY) - 8, x2 = Math.round(maxX) + 8, y2 = Math.round(maxY) + 8;
+                int len = Math.max(8, Math.round(Math.min(x2 - x1, y2 - y1) * 0.36f));
                 int c = Draw.alpha(0xFF000000 | rgb, fade);
                 int outline = Draw.alpha(0xAA000000, fade);
                 for (int pass = 0; pass < 2; pass++) {
@@ -117,7 +117,7 @@ public class TargetEsp extends Module {
             }
             case 1 -> { // glowing ring sliding up and down the body
                 double yOff = (Math.sin(age * 2.2) * 0.5 + 0.5) * h;
-                double r = hw + 0.35;
+                double r = hw + 0.7;
                 for (int band = 0; band < 4; band++) {
                     float a = fade * (1f - band * 0.22f);
                     for (int i = 0; i < 48; i++) {
@@ -132,7 +132,7 @@ public class TargetEsp extends Module {
                     for (int k = 0; k < 16; k++) {
                         double ang = age * 3.0 + orb * Math.PI - k * 0.13;
                         double hh = h * (0.5 + 0.38 * Math.sin(age * 2.0 + orb * 1.7 - k * 0.09));
-                        Vec3d p = new Vec3d(ex + Math.cos(ang) * (hw + 0.4), ey + hh, ez + Math.sin(ang) * (hw + 0.4));
+                        Vec3d p = new Vec3d(ex + Math.cos(ang) * (hw + 0.7), ey + hh, ez + Math.sin(ang) * (hw + 0.7));
                         float a = fade * (1f - k / 16f);
                         int size = Math.max(1, Math.round((t + 3) * (1f - k / 18f)));
                         dot(ctx, project(p, sw, sh), size, Draw.alpha(0xFF000000 | rgb, a));

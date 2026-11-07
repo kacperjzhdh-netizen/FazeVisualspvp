@@ -36,6 +36,14 @@ public class ModuleManager {
         modules.add(new SpeedHud());
         modules.add(new ClockHud());
         modules.add(new PotionHud());
+        modules.add(new InfoHuds.Direction());
+        modules.add(new InfoHuds.Memory());
+        modules.add(new InfoHuds.Biome());
+        modules.add(new InfoHuds.Server());
+        modules.add(new InfoHuds.WorldTime());
+        modules.add(new InfoHuds.ItemCounter());
+        modules.add(new InfoHuds.HurtFlash());
+        modules.add(new InfoHuds.LowHealth());
         modules.add(new Fullbright());
         Interface ui = new Interface();
         modules.add(ui);

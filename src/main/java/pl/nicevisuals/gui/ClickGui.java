@@ -40,7 +40,15 @@ public class ClickGui extends Screen {
             Map.entry("Clock", "Show the current time."),
             Map.entry("Potion HUD", "Show active potion effects."),
             Map.entry("Fullbright", "See clearly in the dark."),
-            Map.entry("Interface", "Switch the menu look: Glass or Pixel."));
+            Map.entry("Interface", "Switch the menu look: Glass or Pixel."),
+            Map.entry("Direction", "Show where you are facing."),
+            Map.entry("Memory", "Show RAM used by the game."),
+            Map.entry("Biome", "Show the biome you are in."),
+            Map.entry("Server", "Show the server address."),
+            Map.entry("World Time", "Show the in-game time of day."),
+            Map.entry("Item Counter", "Totems, gapples and pearls you carry."),
+            Map.entry("Hurt Flash", "Red edge flash when you take damage."),
+            Map.entry("Low Health", "Pulsing red edges at low health."));
 
     private enum Tab {
         COMBAT("Combat", "Targeting and hit feedback.", Category.COMBAT),
@@ -73,6 +81,9 @@ public class ClickGui extends Screen {
     }
 
     @Override public boolean shouldPause() { return false; }
+
+    /** A row is drawn only when it fits fully inside the list area (no scissor needed). */
+    private boolean vis(int y, int h) { return y >= clipY1 && y + h <= clipY2; }
 
     private float smooth(Object key, float target) {
         float a = anim.getOrDefault(key, target);
@@ -135,7 +146,6 @@ public class ClickGui extends Screen {
 
         clipY1 = y0 + 40;
         clipY2 = y0 + ch - 6;
-        ctx.enableScissor(Math.round(cx * S), Math.round(clipY1 * S), Math.round((cx + cw) * S), Math.round(clipY2 * S));
         int y = clipY1 - Math.round(scroll);
         int top = y;
         int rx = cx + cw - 14; // right edge for controls
@@ -147,12 +157,15 @@ public class ClickGui extends Screen {
             y += 60;
         } else {
             for (Module m : NiceVisualsClient.modules.in(tab.cat)) {
+                if (vis(y, 28)) {
                 ctx.drawTextWithShadow(textRenderer, m.name, cx + 14, y + 4, WHITE);
                 ctx.drawTextWithShadow(textRenderer, DESC.getOrDefault(m.name, ""), cx + 14, y + 15, 0xFF9AA5C8);
                 toggle(ctx, m, rx - 28, y + 7, m.isEnabled());
                 hits.add(new Hit(cx + 10, y, cw - 20, 28, true, m::toggle, null));
+                }
                 y += 30;
                 for (Setting s : m.settings) {
+                    if (vis(y, 22)) {
                     ctx.drawTextWithShadow(textRenderer, s.name, cx + 26, y + 7, DIM);
                     if (s instanceof BoolSetting b) {
                         toggle(ctx, b, rx - 28, y + 4, b.value);
@@ -177,6 +190,7 @@ public class ClickGui extends Screen {
                             else { openDrop = md; dropX = bx; dropY = by; dropW = bw; }
                         }, null));
                     }
+                    }
                     y += 24;
                 }
                 ctx.fill(cx + 14, y + 1, cx + cw - 14, y + 2, 0x18FFFFFF);
@@ -185,7 +199,6 @@ public class ClickGui extends Screen {
         }
         maxScroll = Math.max(0, (y - top) - (clipY2 - clipY1));
         scroll = Math.max(0, Math.min(scroll, maxScroll));
-        ctx.disableScissor();
 
         // bottom buttons: Reset, Cancel, Apply
         int by = y0 + ch + 4, bw = 62, bh = 22, gap = 6;
