@@ -112,19 +112,42 @@ public class ClickGui extends Screen {
     private Text t(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT)); }
     private Text tb(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT_B)); }
     private float m = 1f; // drawing pixels per layout unit (set in render)
+    private static final float SC = 0.8f, SPACING = 0.35f;
 
-    private void text(DrawContext c, Text tx, int x, int y, int col) {
-        var ms = c.getMatrices();
-        ms.push();
-        ms.translate(x * m, y * m, 0);
-        ms.scale(m, m, 1f);
-        c.drawText(textRenderer, tx, 0, 0, col, false);
-        ms.pop();
+    private static String up(char ch) { return String.valueOf(Character.isLetter(ch) ? Character.toUpperCase(ch) : ch); }
+
+    /** Width of a string in small caps (letters are drawn as scaled-down capitals). */
+    private float scW(String s, boolean bold) {
+        float w = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            Text tx = bold ? tb(up(ch)) : t(up(ch));
+            w += textRenderer.getWidth(tx) * (Character.isLetter(ch) ? SC : 1f) + SPACING;
+        }
+        return w;
     }
-    private void txt(DrawContext c, String s, int x, int y, int col) { text(c, t(s), x, y, col); }
-    private void txtB(DrawContext c, String s, int x, int y, int col) { text(c, tb(s), x, y, col); }
-    private void txtR(DrawContext c, String s, int rx, int y, int col) { text(c, t(s), rx - textRenderer.getWidth(t(s)), y, col); }
-    private void txtC(DrawContext c, String s, int cx, int y, int col) { text(c, t(s), cx - textRenderer.getWidth(t(s)) / 2, y, col); }
+
+    private void sc(DrawContext c, String s, float x, float y, int col, boolean bold) {
+        var ms = c.getMatrices();
+        float cx = x;
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            boolean letter = Character.isLetter(ch);
+            float k = letter ? SC : 1f;
+            Text tx = bold ? tb(up(ch)) : t(up(ch));
+            ms.push();
+            ms.translate(cx * m, (y + (letter ? (1f - SC) * 7.2f : 0f)) * m, 0);
+            ms.scale(m * k, m * k, 1f);
+            c.drawText(textRenderer, tx, 0, 0, col, false);
+            ms.pop();
+            cx += textRenderer.getWidth(tx) * k + SPACING;
+        }
+    }
+
+    private void txt(DrawContext c, String s, int x, int y, int col) { sc(c, s, x, y, col, false); }
+    private void txtB(DrawContext c, String s, int x, int y, int col) { sc(c, s, x, y, col, true); }
+    private void txtR(DrawContext c, String s, int rx, int y, int col) { sc(c, s, rx - scW(s, false), y, col, false); }
+    private void txtC(DrawContext c, String s, int cx, int y, int col) { sc(c, s, cx - scW(s, false) / 2f, y, col, false); }
     private void logo(DrawContext c, int x, int y, int size) {
         var ms = c.getMatrices();
         ms.push();
@@ -407,7 +430,7 @@ public class ClickGui extends Screen {
         Tab[] tabs = Tab.values();
         int pillW = 8;
         int[] tw = new int[tabs.length];
-        for (int i = 0; i < tabs.length; i++) { tw[i] = textRenderer.getWidth(t(tabs[i].title)) + 24; pillW += tw[i]; }
+        for (int i = 0; i < tabs.length; i++) { tw[i] = Math.round(scW(tabs[i].title, false)) + 24; pillW += tw[i]; }
         int px = x0 + (W - pillW) / 2, py = y0 + 10;
         Draw.rrect(ctx, px, py, pillW, 28, 14, field);
         int tx = px + 4;
@@ -428,7 +451,7 @@ public class ClickGui extends Screen {
         int on = 0;
         for (Module m : NiceVisualsClient.modules.modules) if (m.isEnabled() && m != ui) on++;
         String chipText = on + (on == 1 ? " module on" : " modules on");
-        int chipW = textRenderer.getWidth(t(chipText)) + 30, chipX = closeX - 8 - chipW;
+        int chipW = Math.round(scW(chipText, false)) + 30, chipX = closeX - 8 - chipW;
         if (chipX > px + pillW + 8) {
             Draw.rrect(ctx, chipX, y0 + 14, chipW, 20, 10, 0x5538D98A);
             Draw.rrect(ctx, chipX + 1, y0 + 15, chipW - 2, 18, 9, field);
