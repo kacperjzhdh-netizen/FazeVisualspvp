@@ -111,10 +111,28 @@ public class ClickGui extends Screen {
     // ---- text ----
     private Text t(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT)); }
     private Text tb(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT_B)); }
-    private void txt(DrawContext c, String s, int x, int y, int col) { c.drawText(textRenderer, t(s), x, y, col, false); }
-    private void txtB(DrawContext c, String s, int x, int y, int col) { c.drawText(textRenderer, tb(s), x, y, col, false); }
-    private void txtR(DrawContext c, String s, int rx, int y, int col) { c.drawText(textRenderer, t(s), rx - textRenderer.getWidth(t(s)), y, col, false); }
-    private void txtC(DrawContext c, String s, int cx, int y, int col) { c.drawText(textRenderer, t(s), cx - textRenderer.getWidth(t(s)) / 2, y, col, false); }
+    private float m = 1f; // drawing pixels per layout unit (set in render)
+
+    private void text(DrawContext c, Text tx, int x, int y, int col) {
+        var ms = c.getMatrices();
+        ms.push();
+        ms.translate(x * m, y * m, 0);
+        ms.scale(m, m, 1f);
+        c.drawText(textRenderer, tx, 0, 0, col, false);
+        ms.pop();
+    }
+    private void txt(DrawContext c, String s, int x, int y, int col) { text(c, t(s), x, y, col); }
+    private void txtB(DrawContext c, String s, int x, int y, int col) { text(c, tb(s), x, y, col); }
+    private void txtR(DrawContext c, String s, int rx, int y, int col) { text(c, t(s), rx - textRenderer.getWidth(t(s)), y, col); }
+    private void txtC(DrawContext c, String s, int cx, int y, int col) { text(c, t(s), cx - textRenderer.getWidth(t(s)) / 2, y, col); }
+    private void logo(DrawContext c, int x, int y, int size) {
+        var ms = c.getMatrices();
+        ms.push();
+        ms.translate(x * m, y * m, 0);
+        ms.scale(m, m, 1f);
+        c.drawTexture(RenderLayer::getGuiTextured, LOGO, 0, 0, 0f, 0f, size, size, size, size);
+        ms.pop();
+    }
 
     private static int hsb(float hue, float s, float b) {
         return 0xFF000000 | (java.awt.Color.HSBtoRGB(((hue % 360f) + 360f) % 360f / 360f, s, b) & 0xFFFFFF);
@@ -251,7 +269,7 @@ public class ClickGui extends Screen {
         Card c = new Card();
         c.rows.add(titleRow("Accent color"));
         c.rows.add(new Row(24, (ctx, x, y, w) -> {
-            for (int i = 0; i < w; i++) ctx.fill(x + i, y + 6, x + i + 1, y + 14, hsb(360f * i / (w - 1), 0.75f, 1f));
+            for (int i = 0; i < w; i++) Draw.fill(ctx, x + i, y + 6, x + i + 1, y + 14, hsb(360f * i / (w - 1), 0.75f, 1f));
             int kx = x + Math.round((float) (ui.hue.value / 360.0) * (w - 1));
             Draw.rrect(ctx, kx - 6, y + 4, 12, 12, 6, 0xFFFFFFFF);
             Draw.rrect(ctx, kx - 4, y + 6, 8, 8, 4, accA);
@@ -350,7 +368,7 @@ public class ClickGui extends Screen {
             int s = Math.max(1, Math.round(p.size * sz));
             float a = 0.25f + 0.5f * (0.5f + 0.5f * (float) Math.sin(time * 1.3 + p.phase));
             int col = mode == 3 ? Draw.alpha(light ? 0xFF9AA6D8 : 0xFFFFFFFF, a) : Draw.alpha(Draw.mix(accA, 0xFFFFFFFF, 0.3f), a);
-            if (mode == 1) ctx.fill(px, py, px + s, py + s, col);
+            if (mode == 1) Draw.fill(ctx, px, py, px + s, py + s, col);
             else Draw.rrect(ctx, px, py, s, s, s / 2 + 1, col);
         }
     }
@@ -365,20 +383,24 @@ public class ClickGui extends Screen {
         mx = Math.round(rmx / S);
         my = Math.round(rmy / S);
         int vw = Math.round(width / S), vh = Math.round(height / S);
+        float gs = (float) client.getWindow().getScaleFactor();
+        m = S * gs;
+        Draw.unit = m;
         ctx.getMatrices().push();
-        ctx.getMatrices().scale(S, S, 1f);
+        ctx.getMatrices().scale(1f / gs, 1f / gs, 1f);
 
         int W = Math.min(vw - 16, 580), H = Math.min(vh - 16, 340);
         int x0 = (vw - W) / 2, y0 = (vh - H) / 2;
 
-        // window + particles
+        // soft shadow, window + particles
+        for (int i = 6; i >= 1; i--) Draw.rrect(ctx, x0 - i * 2, y0 - i * 2 + 4, W + i * 4, H + i * 4, 16 + i * 2, light ? 0x07102040 : 0x0B000000);
         Draw.rrectV(ctx, x0, y0, W, H, 16, border, Draw.alpha(border, 0.4f));
         Draw.rrectV(ctx, x0 + 1, y0 + 1, W - 2, H - 2, 15, win0, win1);
         if (ui.theme.index == 1) Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 40, 13, 0x1CFFFFFF, 0x00FFFFFF);
         drawParticles(ctx, x0, y0, W, H);
 
         // header: logo + name, tab pill, status chip, close
-        ctx.drawTexture(RenderLayer::getGuiTextured, LOGO, x0 + 16, y0 + 12, 0f, 0f, 22, 22, 22, 22);
+        logo(ctx, x0 + 16, y0 + 12, 22);
         txtB(ctx, "Nice Visuals", x0 + 44, y0 + 12, txt);
         txt(ctx, tab.title, x0 + 44, y0 + 24, dim);
 
@@ -482,6 +504,7 @@ public class ClickGui extends Screen {
         drawToast(ctx, vw);
         ctx.getMatrices().pop();
         ctx.getMatrices().pop();
+        Draw.unit = 1f;
     }
 
     private void button(DrawContext ctx, int x, int y, int w, int h, String label, boolean primary, Runnable r) {
@@ -504,11 +527,11 @@ public class ClickGui extends Screen {
         Draw.rrect(ctx, x + 1, y + 1, w - 2, h - 2, 11, Draw.alpha(light ? 0xFFFFFFFF : 0xF2101428, a));
         Draw.rrect(ctx, x + 9, y + 9, 20, 20, 10, Draw.alpha(0xFF3DDC97, a));
         int ck = Draw.alpha(0xFFFFFFFF, a);
-        ctx.fill(x + 14, y + 19, x + 16, y + 21, ck);
-        ctx.fill(x + 16, y + 21, x + 18, y + 23, ck);
-        for (int i = 0; i < 5; i++) ctx.fill(x + 18 + i, y + 21 - i, x + 20 + i, y + 23 - i, ck);
-        ctx.drawText(textRenderer, tb("Settings Saved!"), x + 38, y + 9, Draw.alpha(txt, a), false);
-        ctx.drawText(textRenderer, t("Your changes have been applied."), x + 38, y + 21, Draw.alpha(dim, a), false);
+        Draw.fill(ctx, x + 14, y + 19, x + 16, y + 21, ck);
+        Draw.fill(ctx, x + 16, y + 21, x + 18, y + 23, ck);
+        for (int i = 0; i < 5; i++) Draw.fill(ctx, x + 18 + i, y + 21 - i, x + 20 + i, y + 23 - i, ck);
+        txtB(ctx, "Settings Saved!", x + 38, y + 9, Draw.alpha(txt, a));
+        txt(ctx, "Your changes have been applied.", x + 38, y + 21, Draw.alpha(dim, a));
     }
 
     private void doApply() { NiceVisualsClient.modules.save(); toastAt = System.currentTimeMillis(); }
