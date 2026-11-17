@@ -21,6 +21,7 @@ public class ModuleManager {
     public final ReachDisplay reach = new ReachDisplay();
     public final HitSound hitSound = new HitSound();
     public final Interface ui = new Interface();
+    public final DiscordRpc rpc = new DiscordRpc();
     public final MoreModules.KillCounter kills = new MoreModules.KillCounter();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
 
@@ -57,6 +58,8 @@ public class ModuleManager {
         modules.add(new Fullbright());
         modules.add(ui);
         ui.setEnabled(true);
+        modules.add(rpc);
+        rpc.setEnabled(true);
     }
 
     public List<Module> in(Category c) {

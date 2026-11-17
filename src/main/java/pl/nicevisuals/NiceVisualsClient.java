@@ -1,7 +1,9 @@
 package pl.nicevisuals;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import pl.nicevisuals.discord.DiscordIpc;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -28,6 +30,8 @@ public class NiceVisualsClient implements ClientModInitializer {
 
         openGui = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.nicevisuals.gui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "category.nicevisuals"));
+
+        ClientLifecycleEvents.CLIENT_STOPPING.register(c -> DiscordIpc.stop());
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             while (openGui.wasPressed()) {

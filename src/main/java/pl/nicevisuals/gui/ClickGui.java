@@ -60,7 +60,8 @@ public class ClickGui extends Screen {
             Map.entry("Day Counter", "Show the world day number."),
             Map.entry("Light Level", "Show the light level where you stand."),
             Map.entry("Time Changer", "Force a fixed time of day (client only)."),
-            Map.entry("Weather", "Remove rain and thunder (client only)."));
+            Map.entry("Weather", "Remove rain and thunder (client only)."),
+            Map.entry("Discord RPC", "Show server and play time on your Discord."));
 
     private enum Tab {
         COMBAT("Combat", "Targeting and hit feedback.", Category.COMBAT),
@@ -354,6 +355,7 @@ public class ClickGui extends Screen {
         List<Card> out = new ArrayList<>();
         if (query.isEmpty() && tab == Tab.CLIENT) {
             out.add(themeCard()); out.add(accentCard()); out.add(glassCard()); out.add(particlesCard());
+            for (Module m : shown()) out.add(moduleCard(m));
         } else if (query.isEmpty() && tab == Tab.ABOUT) {
             out.add(aboutCard());
         } else {
