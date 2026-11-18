@@ -61,6 +61,8 @@ public class ClickGui extends Screen {
             Map.entry("Light Level", "Show the light level where you stand."),
             Map.entry("Time Changer", "Force a fixed time of day (client only)."),
             Map.entry("Weather", "Remove rain and thunder (client only)."),
+            Map.entry("Sky", "Pick the colour of the sky."),
+            Map.entry("Jump Particles", "Particle ring when you jump."),
             Map.entry("Discord RPC", "Show server and play time on your Discord."));
 
     private enum Tab {
@@ -414,7 +416,7 @@ public class ClickGui extends Screen {
         ctx.getMatrices().push();
         ctx.getMatrices().scale(1f / gs, 1f / gs, 1f);
 
-        int W = Math.min(vw - 16, 580), H = Math.min(vh - 16, 340);
+        int W = Math.min(vw - 16, 660), H = Math.min(vh - 16, 360);
         int x0 = (vw - W) / 2, y0 = (vh - H) / 2;
 
         // soft shadow, window + particles
@@ -424,49 +426,46 @@ public class ClickGui extends Screen {
         if (ui.theme.index == 1) Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 40, 13, 0x1CFFFFFF, 0x00FFFFFF);
         drawParticles(ctx, x0, y0, W, H);
 
-        // header: logo + name, tab pill, status chip, close
-        logo(ctx, x0 + 16, y0 + 12, 22);
-        txtB(ctx, "Nice Visuals", x0 + 44, y0 + 12, txt);
-        txt(ctx, tab.title, x0 + 44, y0 + 24, dim);
-
+        // sidebar: logo, categories, status
+        int SB = 150;
+        Draw.rrect(ctx, x0 + 8, y0 + 8, SB - 8, H - 16, 13, field);
+        logo(ctx, x0 + 20, y0 + 18, 24);
+        txtB(ctx, "Nice Visuals", x0 + 50, y0 + 19, txt);
+        txt(ctx, "Client", x0 + 50, y0 + 31, dim);
+        Draw.fill(ctx, x0 + 20, y0 + 52, x0 + SB - 4, y0 + 53, border);
+        txt(ctx, "Categories", x0 + 22, y0 + 62, dim);
         Tab[] tabs = Tab.values();
-        int pillW = 8;
-        int[] tw = new int[tabs.length];
-        for (int i = 0; i < tabs.length; i++) { tw[i] = Math.round(scW(tabs[i].title, false)) + 24; pillW += tw[i]; }
-        int px = x0 + (W - pillW) / 2, py = y0 + 10;
-        Draw.rrect(ctx, px, py, pillW, 28, 14, field);
-        int tx = px + 4;
-        for (int i = 0; i < tabs.length; i++) {
-            boolean sel = tabs[i] == tab && query.isEmpty();
-            boolean hov = mx >= tx && mx < tx + tw[i] && my >= py + 3 && my < py + 25;
-            if (sel) Draw.rrectGrad(ctx, tx, py + 3, tw[i], 22, 11, accA, accB);
-            else if (hov) Draw.rrect(ctx, tx, py + 3, tw[i], 22, 11, cardFill);
-            txtC(ctx, tabs[i].title, tx + tw[i] / 2, py + 10, sel ? 0xFFFFFFFF : dim);
-            final Tab target = tabs[i];
-            hits.add(new Hit(tx, py + 3, tw[i], 22, false, () -> { tab = target; query = ""; scroll = 0; openDrop = null; }, null, 0, 0));
-            tx += tw[i];
+        int ty = y0 + 78;
+        for (Tab tb : tabs) {
+            boolean sel = tb == tab && query.isEmpty();
+            boolean hov = mx >= x0 + 14 && mx < x0 + SB - 4 && my >= ty && my < ty + 28;
+            if (sel) Draw.rrectGrad(ctx, x0 + 14, ty, SB - 18, 28, 10, accA, accB);
+            else if (hov) Draw.rrect(ctx, x0 + 14, ty, SB - 18, 28, 10, cardFill);
+            Draw.rrect(ctx, x0 + 24, ty + 10, 8, 8, 4, sel ? 0xFFFFFFFF : Draw.alpha(accA, 0.8f));
+            txt(ctx, tb.title, x0 + 40, ty + 10, sel ? 0xFFFFFFFF : txt);
+            final Tab target = tb;
+            hits.add(new Hit(x0 + 14, ty, SB - 18, 28, false, () -> { tab = target; query = ""; scroll = 0; openDrop = null; }, null, 0, 0));
+            ty += 32;
         }
-        int closeX = x0 + W - 16 - 24;
-        Draw.rrect(ctx, closeX, y0 + 12, 24, 24, 12, cardFill);
-        txtC(ctx, "×", closeX + 12, y0 + 17, txt);
-        hits.add(new Hit(closeX, y0 + 12, 24, 24, false, this::close, null, 0, 0));
         int on = 0;
         for (Module m : NiceVisualsClient.modules.modules) if (m.isEnabled() && m != ui) on++;
         String chipText = on + (on == 1 ? " module on" : " modules on");
-        int chipW = Math.round(scW(chipText, false)) + 30, chipX = closeX - 8 - chipW;
-        if (chipX > px + pillW + 8) {
-            Draw.rrect(ctx, chipX, y0 + 14, chipW, 20, 10, 0x5538D98A);
-            Draw.rrect(ctx, chipX + 1, y0 + 15, chipW - 2, 18, 9, field);
-            Draw.rrect(ctx, chipX + 9, y0 + 21, 6, 6, 3, 0xFF38D98A);
-            txt(ctx, chipText, chipX + 21, y0 + 20, txt);
-        }
+        int chipW = SB - 28, chipY = y0 + H - 38;
+        Draw.rrect(ctx, x0 + 14, chipY, chipW, 24, 12, 0x5538D98A);
+        Draw.rrect(ctx, x0 + 15, chipY + 1, chipW - 2, 22, 11, cardFill);
+        Draw.rrect(ctx, x0 + 24, chipY + 9, 6, 6, 3, 0xFF38D98A);
+        txt(ctx, chipText, x0 + 38, chipY + 8, txt);
 
-        // sub-header: title + search
-        int cx = x0 + 16, cr = x0 + W - 16, cw = cr - cx;
+        // content header: title, search, close
+        int cx = x0 + SB + 14, cr = x0 + W - 16, cw = cr - cx;
         boolean searching = !query.isEmpty();
-        txtB(ctx, searching ? "Search results" : tab.title, cx, y0 + 50, txt);
-        txt(ctx, searching ? shown().size() + " modules found" : tab.sub, cx, y0 + 63, dim);
-        int sbw = 150, sbx = cr - sbw, sby = y0 + 48, sbh = 24;
+        txtB(ctx, searching ? "Search results" : tab.title, cx, y0 + 16, txt);
+        txt(ctx, searching ? shown().size() + " modules found" : tab.sub, cx, y0 + 29, dim);
+        int closeX = cr - 24;
+        Draw.rrect(ctx, closeX, y0 + 12, 24, 24, 12, cardFill);
+        txtC(ctx, "×", closeX + 12, y0 + 17, txt);
+        hits.add(new Hit(closeX, y0 + 12, 24, 24, false, this::close, null, 0, 0));
+        int sbw = Math.min(150, cw - 140), sbx = closeX - 8 - sbw, sby = y0 + 12, sbh = 24;
         Draw.rrect(ctx, sbx, sby, sbw, sbh, 12, searchFocus ? accA : border);
         Draw.rrect(ctx, sbx + 1, sby + 1, sbw - 2, sbh - 2, 11, field);
         String shownQ = query.isEmpty() && !searchFocus ? "Search modules"
@@ -475,9 +474,9 @@ public class ClickGui extends Screen {
         hits.add(new Hit(sbx, sby, sbw, sbh, false, () -> searchFocus = true, null, 0, 0));
 
         // cards (two columns, shared scroll)
-        clipY1 = y0 + 80;
+        clipY1 = y0 + 50;
         clipY2 = y0 + H - 40;
-        int cols = cw < 400 ? 1 : 2, gap = 10;
+        int cols = cw < 380 ? 1 : 2, gap = 10;
         int colW = (cw - gap * (cols - 1)) / cols;
         int[] colH = new int[cols];
         int top = clipY1 - Math.round(scroll);

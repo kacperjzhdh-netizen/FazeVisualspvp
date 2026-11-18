@@ -21,6 +21,7 @@ public class ModuleManager {
     public final ReachDisplay reach = new ReachDisplay();
     public final HitSound hitSound = new HitSound();
     public final Interface ui = new Interface();
+    public final Sky sky = new Sky();
     public final DiscordRpc rpc = new DiscordRpc();
     public final MoreModules.KillCounter kills = new MoreModules.KillCounter();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
@@ -56,6 +57,8 @@ public class ModuleManager {
         modules.add(new MoreModules.TimeChanger());
         modules.add(new MoreModules.Weather());
         modules.add(new Fullbright());
+        modules.add(sky);
+        modules.add(new JumpParticles());
         modules.add(ui);
         ui.setEnabled(true);
         modules.add(rpc);

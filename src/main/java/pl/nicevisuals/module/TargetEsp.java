@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import pl.nicevisuals.gui.Draw;
+import pl.nicevisuals.gui.Fx;
 import pl.nicevisuals.setting.BoolSetting;
 import pl.nicevisuals.setting.ModeSetting;
 import pl.nicevisuals.setting.NumSetting;
@@ -20,9 +21,9 @@ public class TargetEsp extends Module {
     public static float tickDelta;
     public static boolean valid;
 
-    private final ModeSetting style = add(new ModeSetting("Style", 0, "Brackets", "Ring", "Orbit"));
-    private final ModeSetting color = add(new ModeSetting("Color", 0, "Pink", "Red", "Blue", "White"));
-    private final NumSetting thick = add(new NumSetting("Thickness", 6, 1, 14));
+    private final ModeSetting style = add(new ModeSetting("Style", 0, "Runes", "Brackets", "Ring", "Orbit"));
+    private final ModeSetting color = add(new ModeSetting("Color", 1, "Pink", "Red", "Blue", "White", "Gold"));
+    private final NumSetting thick = add(new NumSetting("Thickness", 8, 1, 20));
     private final NumSetting seconds = add(new NumSetting("Hide after s", 5, 1, 20));
     private final BoolSetting glow = add(new BoolSetting("Glow outline", false));
     private LivingEntity target;
@@ -53,7 +54,7 @@ public class TargetEsp extends Module {
     }
 
     private int rgb() {
-        return switch (color.index) { case 1 -> 0xFF2B2B; case 2 -> 0x4DA3FF; case 3 -> 0xFFFFFF; default -> 0xE040FB; };
+        return switch (color.index) { case 1 -> 0xFF3B3B; case 2 -> 0x4DA3FF; case 3 -> 0xFFFFFF; case 4 -> 0xFFC857; default -> 0xE040FB; };
     }
 
     private float[] project(Vec3d p, int sw, int sh) {
@@ -64,10 +65,20 @@ public class TargetEsp extends Module {
         return new float[]{(v.x / v.w * 0.5f + 0.5f) * sw, (0.5f - v.y / v.w * 0.5f) * sh};
     }
 
-    private void dot(DrawContext ctx, float[] p, int size, int argb) {
-        if (p == null) return;
-        int x = Math.round(p[0] - size / 2f), y = Math.round(p[1] - size / 2f);
-        ctx.fill(x, y, x + size, y + size, argb);
+    private void seg(Vec3d a, Vec3d b, int sw, int sh, float w, int rgb, float alpha) {
+        float[] p = project(a, sw, sh), q = project(b, sw, sh);
+        if (p == null || q == null) return;
+        Fx.glowLine(p[0], p[1], q[0], q[1], w, rgb, alpha);
+    }
+
+    private void circle(double cx, double y, double cz, double r, double rot, int n, int sw, int sh, float w, int rgb, float a) {
+        Vec3d prev = null;
+        for (int i = 0; i <= n; i++) {
+            double ang = rot + i * Math.PI * 2 / n;
+            Vec3d cur = new Vec3d(cx + Math.cos(ang) * r, y, cz + Math.sin(ang) * r);
+            if (prev != null) seg(prev, cur, sw, sh, w, rgb, a);
+            prev = cur;
+        }
     }
 
     @Override
@@ -83,10 +94,43 @@ public class TargetEsp extends Module {
         float remain = (float) (seconds.value - (System.currentTimeMillis() - lastHit) / 1000.0);
         float fade = Math.min(1f, remain / 0.5f);
         int rgb = rgb();
-        int t = Math.max(4, Math.round((float) thick.value * 3.0f));
+        float w = (float) thick.value * 0.85f;
 
+        Fx.begin(ctx);
         switch (style.index) {
-            case 0 -> { // corner brackets around the projected bounding box
+            case 0 -> { // magic circle on the ground + orbiting slashes around the body
+                double R = Math.max(0.9, hw + 0.7), y = ey + 0.03;
+                circle(ex, y, ez, R, 0, 56, sw, sh, w * 0.8f, rgb, fade);
+                circle(ex, y, ez, R * 0.82, 0, 56, sw, sh, w * 0.55f, rgb, fade * 0.9f);
+                for (int tri = 0; tri < 2; tri++) {
+                    double rot = age * (tri == 0 ? 0.9 : -0.9) + tri * Math.PI / 3;
+                    Vec3d[] v = new Vec3d[3];
+                    for (int k = 0; k < 3; k++) {
+                        double ang = rot + k * Math.PI * 2 / 3;
+                        v[k] = new Vec3d(ex + Math.cos(ang) * R * 0.82, y, ez + Math.sin(ang) * R * 0.82);
+                    }
+                    for (int k = 0; k < 3; k++) seg(v[k], v[(k + 1) % 3], sw, sh, w * 0.6f, rgb, fade);
+                }
+                for (int k = 0; k < 16; k++) { // rune ticks between the two rings
+                    double ang = -age * 0.5 + k * Math.PI * 2 / 16;
+                    double a1 = R * 0.84, a2 = R * (k % 2 == 0 ? 0.97 : 0.92);
+                    seg(new Vec3d(ex + Math.cos(ang) * a1, y, ez + Math.sin(ang) * a1),
+                            new Vec3d(ex + Math.cos(ang) * a2, y, ez + Math.sin(ang) * a2), sw, sh, w * 0.5f, rgb, fade);
+                }
+                for (int arm = 0; arm < 3; arm++) { // rising spiral slashes
+                    Vec3d prev = null;
+                    for (int k = 0; k < 22; k++) {
+                        double ang = age * 2.4 + arm * Math.PI * 2 / 3 - k * 0.12;
+                        double ph = ((age * 0.5 + arm * 0.33 - k * 0.012) % 1.0 + 1.0) % 1.0;
+                        double hh = h * (0.12 + 0.76 * ph);
+                        Vec3d cur = new Vec3d(ex + Math.cos(ang) * (hw + 0.45), ey + hh, ez + Math.sin(ang) * (hw + 0.45));
+                        if (prev != null && Math.abs(cur.y - prev.y) < h * 0.2)
+                            seg(prev, cur, sw, sh, w * 0.7f * (1f - k / 24f), rgb, fade * (1f - k / 22f));
+                        prev = cur;
+                    }
+                }
+            }
+            case 1 -> { // thick corner brackets around the projected bounding box
                 float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
                 int ok = 0;
                 for (int i = 0; i < 8; i++) {
@@ -97,48 +141,34 @@ public class TargetEsp extends Module {
                     minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
                     minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
                 }
-                if (ok < 8) return;
-                int x1 = Math.round(minX) - 8, y1 = Math.round(minY) - 8, x2 = Math.round(maxX) + 8, y2 = Math.round(maxY) + 8;
-                int len = Math.max(8, Math.round(Math.min(x2 - x1, y2 - y1) * 0.36f));
-                int c = Draw.alpha(0xFF000000 | rgb, fade);
-                int outline = Draw.alpha(0xAA000000, fade);
-                for (int pass = 0; pass < 2; pass++) {
-                    int o = pass == 0 ? 2 : 0, col = pass == 0 ? outline : c;
-                    // top-left, top-right, bottom-left, bottom-right
-                    ctx.fill(x1 - o, y1 - o, x1 + len + o, y1 + t + o, col);
-                    ctx.fill(x1 - o, y1 - o, x1 + t + o, y1 + len + o, col);
-                    ctx.fill(x2 - len - o, y1 - o, x2 + o, y1 + t + o, col);
-                    ctx.fill(x2 - t - o, y1 - o, x2 + o, y1 + len + o, col);
-                    ctx.fill(x1 - o, y2 - t - o, x1 + len + o, y2 + o, col);
-                    ctx.fill(x1 - o, y2 - len - o, x1 + t + o, y2 + o, col);
-                    ctx.fill(x2 - len - o, y2 - t - o, x2 + o, y2 + o, col);
-                    ctx.fill(x2 - t - o, y2 - len - o, x2 + o, y2 + o, col);
+                if (ok < 8) break;
+                float pad = 6 + w;
+                float x1 = minX - pad, y1 = minY - pad, x2 = maxX + pad, y2 = maxY + pad;
+                float len = Math.max(10f, Math.min(x2 - x1, y2 - y1) * 0.34f);
+                float[][] c = {{x1, y1, 1, 1}, {x2, y1, -1, 1}, {x1, y2, 1, -1}, {x2, y2, -1, -1}};
+                for (float[] k : c) {
+                    Fx.glowLine(k[0], k[1], k[0] + k[2] * len, k[1], w, rgb, fade);
+                    Fx.glowLine(k[0], k[1], k[0], k[1] + k[3] * len, w, rgb, fade);
                 }
             }
-            case 1 -> { // glowing ring sliding up and down the body
+            case 2 -> { // glowing ring sliding up and down the body
                 double yOff = (Math.sin(age * 2.2) * 0.5 + 0.5) * h;
-                double r = hw + 0.7;
-                for (int band = 0; band < 4; band++) {
-                    float a = fade * (1f - band * 0.22f);
-                    for (int i = 0; i < 48; i++) {
-                        double ang = i * Math.PI * 2 / 48;
-                        Vec3d p = new Vec3d(ex + Math.cos(ang) * r, ey + yOff - band * 0.04, ez + Math.sin(ang) * r);
-                        dot(ctx, project(p, sw, sh), t, Draw.alpha(0xFF000000 | rgb, a));
-                    }
-                }
+                for (int band = 0; band < 3; band++)
+                    circle(ex, ey + yOff - band * 0.06, ez, hw + 0.7, 0, 48, sw, sh, w * (1f - band * 0.2f), rgb, fade * (1f - band * 0.3f));
             }
-            default -> { // two orbs with fading trails
+            default -> { // two orbs with long thick trails
                 for (int orb = 0; orb < 2; orb++) {
-                    for (int k = 0; k < 16; k++) {
-                        double ang = age * 3.0 + orb * Math.PI - k * 0.13;
-                        double hh = h * (0.5 + 0.38 * Math.sin(age * 2.0 + orb * 1.7 - k * 0.09));
-                        Vec3d p = new Vec3d(ex + Math.cos(ang) * (hw + 0.7), ey + hh, ez + Math.sin(ang) * (hw + 0.7));
-                        float a = fade * (1f - k / 16f);
-                        int size = Math.max(1, Math.round((t + 3) * (1f - k / 18f)));
-                        dot(ctx, project(p, sw, sh), size, Draw.alpha(0xFF000000 | rgb, a));
+                    Vec3d prev = null;
+                    for (int k = 0; k < 26; k++) {
+                        double ang = age * 3.0 + orb * Math.PI - k * 0.1;
+                        double hh = h * (0.5 + 0.38 * Math.sin(age * 2.0 + orb * 1.7 - k * 0.07));
+                        Vec3d cur = new Vec3d(ex + Math.cos(ang) * (hw + 0.7), ey + hh, ez + Math.sin(ang) * (hw + 0.7));
+                        if (prev != null) seg(prev, cur, sw, sh, w * (1.2f - k / 26f), rgb, fade * (1f - k / 26f));
+                        prev = cur;
                     }
                 }
             }
         }
+        Fx.end();
     }
 }

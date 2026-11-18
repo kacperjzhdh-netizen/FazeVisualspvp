@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "pl.nicevisuals.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["ClientWorldMixin"],
+  "injectors": { "defaultRequire": 0 }
+}

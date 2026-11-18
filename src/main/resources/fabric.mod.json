@@ -8,6 +8,7 @@
   "icon": "assets/nicevisuals/icon.png",
   "license": "All-Rights-Reserved",
   "environment": "client",
+  "mixins": ["nicevisuals.mixins.json"],
   "entrypoints": { "client": ["pl.nicevisuals.NiceVisualsClient"] },
   "depends": {
     "fabricloader": ">=0.16.0",
