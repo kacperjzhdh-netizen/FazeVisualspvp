@@ -20,6 +20,8 @@ public final class Fx {
 
     public static void begin(DrawContext ctx) {
         RenderSystem.enableBlend();
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         mat = ctx.getMatrices().peek().getPositionMatrix();
@@ -30,6 +32,8 @@ public final class Fx {
     public static void end() {
         if (buf != null && count > 0) BufferRenderer.drawWithGlobalProgram(buf.end());
         buf = null;
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
         RenderSystem.disableBlend();
     }
 
