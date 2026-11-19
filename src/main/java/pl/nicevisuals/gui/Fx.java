@@ -1,64 +1,40 @@
 package pl.nicevisuals.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import org.joml.Matrix4f;
 
-/** Batched thick anti-alias-friendly lines (real quads, not pixel steps) for the HUD. */
+/** Thick lines for the HUD built from touching squares (uses only DrawContext.fill, so it works everywhere). */
 public final class Fx {
-    private static BufferBuilder buf;
-    private static Matrix4f mat;
-    private static int count;
+    private static DrawContext ctx;
 
     private Fx() {}
 
-    public static void begin(DrawContext ctx) {
-        RenderSystem.enableBlend();
-        RenderSystem.disableCull();
-        RenderSystem.disableDepthTest();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-        mat = ctx.getMatrices().peek().getPositionMatrix();
-        buf = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        count = 0;
-    }
+    public static void begin(DrawContext c) { ctx = c; }
 
-    public static void end() {
-        if (buf != null && count > 0) BufferRenderer.drawWithGlobalProgram(buf.end());
-        buf = null;
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-    }
+    public static void end() { ctx = null; }
 
-    /** One thick line with slightly extended ends so polylines have no gaps. */
-    public static void line(float x1, float y1, float x2, float y2, float w, int argb) {
-        if (buf == null) return;
+    private static void stamp(float x1, float y1, float x2, float y2, float size, int argb) {
         float dx = x2 - x1, dy = y2 - y1;
         float len = (float) Math.sqrt(dx * dx + dy * dy);
-        if (len < 0.001f) { dx = 1; dy = 0; len = 1; }
-        dx /= len; dy /= len;
-        float h = w / 2f;
-        float ex = dx * h, ey = dy * h;
-        float nx = -dy * h, ny = dx * h;
-        float ax = x1 - ex, ay = y1 - ey, bx = x2 + ex, by = y2 + ey;
-        buf.vertex(mat, ax + nx, ay + ny, 0).color(argb);
-        buf.vertex(mat, ax - nx, ay - ny, 0).color(argb);
-        buf.vertex(mat, bx - nx, by - ny, 0).color(argb);
-        buf.vertex(mat, bx + nx, by + ny, 0).color(argb);
-        count++;
+        float step = Math.max(1f, size * 0.9f);
+        int n = Math.max(1, (int) Math.ceil(len / step));
+        float h = size / 2f;
+        for (int i = 0; i <= n; i++) {
+            float t = i / (float) n;
+            int x = Math.round(x1 + dx * t - h), y = Math.round(y1 + dy * t - h);
+            int s = Math.max(1, Math.round(size));
+            ctx.fill(x, y, x + s, y + s, argb);
+        }
     }
 
-    /** Line with a soft outer glow (wide faint pass under the solid one). */
+    public static void line(float x1, float y1, float x2, float y2, float w, int argb) {
+        if (ctx == null) return;
+        stamp(x1, y1, x2, y2, w, argb);
+    }
+
+    /** Line with a soft faint halo underneath. */
     public static void glowLine(float x1, float y1, float x2, float y2, float w, int rgb, float alpha) {
-        line(x1, y1, x2, y2, w * 2.4f, Draw.alpha(0xFF000000 | rgb, alpha * 0.18f));
-        line(x1, y1, x2, y2, w * 1.5f, Draw.alpha(0xFF000000 | rgb, alpha * 0.35f));
-        line(x1, y1, x2, y2, w, Draw.alpha(0xFF000000 | rgb, alpha));
+        if (ctx == null) return;
+        stamp(x1, y1, x2, y2, w * 1.8f, Draw.alpha(0xFF000000 | rgb, alpha * 0.22f));
+        stamp(x1, y1, x2, y2, w, Draw.alpha(0xFF000000 | rgb, alpha));
     }
 }
