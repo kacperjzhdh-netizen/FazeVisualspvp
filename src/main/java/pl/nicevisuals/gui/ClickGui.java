@@ -73,7 +73,7 @@ public class ClickGui extends Screen {
         HUD("HUD", "Information on your screen.", Category.HUD),
         WORLD("World", "How the world looks.", Category.WORLD),
         CLIENT("Client", "Menu appearance.", Category.CLIENT),
-        ABOUT("About", "NiceVisuals.", null);
+        ABOUT("About", "LeafVisuals.", null);
         final String title, sub; final Category cat;
         Tab(String t, String s, Category c) { title = t; sub = s; cat = c; }
     }
@@ -108,7 +108,7 @@ public class ClickGui extends Screen {
     private boolean light;
 
     public ClickGui() {
-        super(Text.literal("Nice Visuals"));
+        super(Text.literal("LeafVisuals"));
         snapshot = NiceVisualsClient.modules.toJson();
     }
 
@@ -148,6 +148,12 @@ public class ClickGui extends Screen {
             ms.pop();
             cx += textRenderer.getWidth(tx) * k + SPACING;
         }
+    }
+
+    private String fit(String s, int max) {
+        if (s == null) return "";
+        while (s.length() > 1 && scW(s, true) > max) s = s.substring(0, s.length() - 1);
+        return s;
     }
 
     private void txt(DrawContext c, String s, int x, int y, int col) { sc(c, s, x, y, col, false); }
@@ -349,10 +355,10 @@ public class ClickGui extends Screen {
 
     private Card aboutCard() {
         Card c = new Card();
-        c.rows.add(titleRow("NiceVisuals v1.0.0"));
+        c.rows.add(titleRow("LeafVisuals v1.0.0"));
         c.rows.add(new Row(14, (ctx, x, y, w) -> txt(ctx, "Press X in game to open this menu.", x, y, dim)));
         c.rows.add(new Row(14, (ctx, x, y, w) -> txt(ctx, "Settings are saved in config/nicevisuals.json", x, y, dim)));
-        c.rows.add(new Row(14, (ctx, x, y, w) -> txt(ctx, "Made by NiceCode.", x, y, dim)));
+        c.rows.add(new Row(14, (ctx, x, y, w) -> txt(ctx, "Made by LeafVisuals.", x, y, dim)));
         return c;
     }
 
@@ -433,7 +439,7 @@ public class ClickGui extends Screen {
         int SB = 150;
         Draw.rrect(ctx, x0 + 8, y0 + 8, SB - 8, H - 16, 13, field);
         logo(ctx, x0 + 20, y0 + 18, 24);
-        txtB(ctx, "Nice Visuals", x0 + 50, y0 + 19, txt);
+        txtB(ctx, "LeafVisuals", x0 + 50, y0 + 19, txt);
         txt(ctx, "Client", x0 + 50, y0 + 31, dim);
         Draw.fill(ctx, x0 + 20, y0 + 52, x0 + SB - 4, y0 + 53, border);
         txt(ctx, "Categories", x0 + 22, y0 + 62, dim);
@@ -450,6 +456,17 @@ public class ClickGui extends Screen {
             hits.add(new Hit(x0 + 14, ty, SB - 18, 28, false, () -> { tab = target; query = ""; scroll = 0; openDrop = null; }, null, 0, 0));
             ty += 32;
         }
+        // profile: nick + where you play
+        String nick = client.getSession().getUsername();
+        var se = client.getCurrentServerEntry();
+        String where = se != null ? se.address : client.world != null ? "Singleplayer" : "Main menu";
+        int pY = y0 + H - 108;
+        Draw.rrect(ctx, x0 + 14, pY, SB - 28, 60, 12, border);
+        Draw.rrect(ctx, x0 + 15, pY + 1, SB - 30, 58, 11, cardFill);
+        txt(ctx, "Player", x0 + 24, pY + 8, dim);
+        txtB(ctx, fit(nick, SB - 48), x0 + 24, pY + 19, txt);
+        txt(ctx, "Playing on", x0 + 24, pY + 34, dim);
+        txtB(ctx, fit(where, SB - 48), x0 + 24, pY + 45, accA);
         int on = 0;
         for (Module m : NiceVisualsClient.modules.modules) if (m.isEnabled() && m != ui) on++;
         String chipText = on + (on == 1 ? " module on" : " modules on");
