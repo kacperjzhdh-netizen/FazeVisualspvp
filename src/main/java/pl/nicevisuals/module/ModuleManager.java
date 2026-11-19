@@ -22,6 +22,8 @@ public class ModuleManager {
     public final HitSound hitSound = new HitSound();
     public final Interface ui = new Interface();
     public final Sky sky = new Sky();
+    public final Effects.HitEffect hitEffect = new Effects.HitEffect();
+    public final Effects.KillEffect killEffect = new Effects.KillEffect();
     public final DiscordRpc rpc = new DiscordRpc();
     public final MoreModules.KillCounter kills = new MoreModules.KillCounter();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
@@ -58,6 +60,9 @@ public class ModuleManager {
         modules.add(new MoreModules.Weather());
         modules.add(new Fullbright());
         modules.add(sky);
+        modules.add(hitEffect);
+        modules.add(killEffect);
+        modules.add(new Effects.Trails());
         modules.add(new JumpParticles());
         modules.add(ui);
         ui.setEnabled(true);

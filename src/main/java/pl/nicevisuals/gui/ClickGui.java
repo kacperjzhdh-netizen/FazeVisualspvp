@@ -61,6 +61,9 @@ public class ClickGui extends Screen {
             Map.entry("Light Level", "Show the light level where you stand."),
             Map.entry("Time Changer", "Force a fixed time of day (client only)."),
             Map.entry("Weather", "Remove rain and thunder (client only)."),
+            Map.entry("Hit Effect", "Particles where you hit."),
+            Map.entry("Kill Effect", "Particle pillar and sound on a kill."),
+            Map.entry("Trails", "Particle trail behind you."),
             Map.entry("Sky", "Pick the colour of the sky."),
             Map.entry("Jump Particles", "Particle ring when you jump."),
             Map.entry("Discord RPC", "Show server and play time on your Discord."));

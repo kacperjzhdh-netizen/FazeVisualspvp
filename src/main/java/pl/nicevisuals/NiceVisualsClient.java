@@ -60,6 +60,8 @@ public class NiceVisualsClient implements ClientModInitializer {
                 if (modules.combo.isEnabled()) modules.combo.registerHit();
                 if (modules.hitSound.isEnabled()) modules.hitSound.play();
                 if (modules.kills.isEnabled()) modules.kills.registerHit(le);
+                if (modules.hitEffect.isEnabled()) modules.hitEffect.hit(MinecraftClient.getInstance(), le);
+                if (modules.killEffect.isEnabled()) modules.killEffect.registerHit(le);
                 if (modules.reach.isEnabled()) modules.reach.registerHit(player.distanceTo(le));
                 if (modules.targetHud.isEnabled()) modules.targetHud.setTarget(le);
                 if (modules.targetEsp.isEnabled()) modules.targetEsp.setTarget(le);
