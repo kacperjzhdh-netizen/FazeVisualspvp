@@ -530,16 +530,16 @@ public class ClickGui extends Screen {
             int ly = clipY1 - Math.round(listScroll);
             for (Module md : mods) {
                 if (ly >= clipY1 && ly + 26 <= clipY2) {
-                    boolean on = md.isEnabled(), sel = md == selected;
+                    boolean mon = md.isEnabled(), sel = md == selected;
                     boolean hov = mx >= cx && mx < cx + lw && my >= ly && my < ly + 26;
-                    if (on) Draw.rrectGrad(ctx, cx, ly, lw, 26, 9, accA, accB);
+                    if (mon) Draw.rrectGrad(ctx, cx, ly, lw, 26, 9, accA, accB);
                     else {
                         Draw.rrect(ctx, cx, ly, lw, 26, 9, sel ? accA : border);
                         Draw.rrect(ctx, cx + 1, ly + 1, lw - 2, 24, 8, hov ? cardHover : cardFill);
                     }
-                    txt(ctx, md.name, cx + 12, ly + 9, on ? 0xFFFFFFFF : (sel ? txt : dim));
-                    Draw.rrect(ctx, cx + lw - 26, ly + 8, 10, 10, 5, on ? 0xCCFFFFFF : sel ? accA : off);
-                    Draw.rrect(ctx, cx + lw - 23, ly + 11, 4, 4, 2, on ? accB : cardFill);
+                    txt(ctx, md.name, cx + 12, ly + 9, mon ? 0xFFFFFFFF : (sel ? txt : dim));
+                    Draw.rrect(ctx, cx + lw - 26, ly + 8, 10, 10, 5, mon ? 0xCCFFFFFF : sel ? accA : off);
+                    Draw.rrect(ctx, cx + lw - 23, ly + 11, 4, 4, 2, mon ? accB : cardFill);
                     final Module mm = md;
                     hits.add(new Hit(cx, ly, lw - 30, 26, true, () -> { selected = mm; mm.toggle(); }, null, 0, 0));
                     hits.add(new Hit(cx + lw - 30, ly, 30, 26, true, () -> selected = mm, null, 0, 0));
