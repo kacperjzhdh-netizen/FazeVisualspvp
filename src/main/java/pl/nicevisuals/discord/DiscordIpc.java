@@ -36,7 +36,7 @@ public final class DiscordIpc {
 
     /** Editable settings stored in config/nicevisuals-discord.json. */
     public static final class Config {
-        public String clientId = "";
+        public String clientId = "1573688669821341806";
         public String clientName = "LeafVisuals";
         public String largeImageKey = "leaf";
         public String largeImageText = "LeafVisuals";
@@ -86,6 +86,7 @@ public final class DiscordIpc {
         synchronized (LOCK) {
             if (running) return;
             cfg = loadConfig();
+            if (cfg.clientId == null || cfg.clientId.isBlank()) cfg.clientId = "1573688669821341806";
             if (cfg.clientId == null || cfg.clientId.isBlank()) {
                 if (!warnedNoId) {
                     LOG.warn("Discord RPC is idle: set \"clientId\" in {} (your Discord application ID).", configFile());
