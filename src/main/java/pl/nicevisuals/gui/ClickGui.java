@@ -282,6 +282,20 @@ public class ClickGui extends Screen {
         });
     }
 
+    private final java.util.Set<String> collapsed = new java.util.HashSet<>();
+
+    private Card group(String key, String title, List<Row> rows) {
+        Card c = new Card();
+        c.rows.add(new Row(24, (ctx, x, y, w) -> {
+            boolean open = !collapsed.contains(key);
+            txtB(ctx, title, x, y + 5, txt);
+            txtR(ctx, open ? "^" : "v", x + w - 2, y + 5, dim);
+            hits.add(new Hit(x - 12, y, w + 24, 24, true, () -> { if (!collapsed.remove(key)) collapsed.add(key); }, null, 0, 0));
+        }));
+        if (!collapsed.contains(key)) c.rows.addAll(rows);
+        return c;
+    }
+
     private Card moduleCard(Module m) {
         Card c = new Card();
         c.rows.add(new Row(32, (ctx, x, y, w) -> {
@@ -458,7 +472,23 @@ public class ClickGui extends Screen {
         drawParticles(ctx, x0, y0, W, H);
 
         // sidebar: logo, categories, status
-        int SB = 150;
+        boolean rail = ui.theme.index == 4;
+        int SB = rail ? 64 : 150;
+        if (rail) {
+            Draw.rrect(ctx, x0 + 8, y0 + 8, SB - 8, H - 16, 13, field);
+            logo(ctx, x0 + 20, y0 + 16, 32);
+            int ry = y0 + 62;
+            for (Tab tb : Tab.values()) {
+                boolean rsel = tb == tab && query.isEmpty();
+                boolean rhov = mx >= x0 + 20 && mx < x0 + 52 && my >= ry && my < ry + 32;
+                if (rsel) Draw.rrectGrad(ctx, x0 + 20, ry, 32, 32, 10, accA, accB);
+                else Draw.rrect(ctx, x0 + 20, ry, 32, 32, 10, rhov ? cardHover : cardFill);
+                txtC(ctx, tb.title.substring(0, 1), x0 + 36, ry + 11, rsel ? 0xFFFFFFFF : dim);
+                final Tab rt = tb;
+                hits.add(new Hit(x0 + 20, ry, 32, 32, false, () -> { tab = rt; query = ""; scroll = 0; listScroll = 0; selected = null; openDrop = null; }, null, 0, 0));
+                ry += 38;
+            }
+        } else {
         Draw.rrect(ctx, x0 + 8, y0 + 8, SB - 8, H - 16, 13, field);
         logo(ctx, x0 + 20, y0 + 18, 24);
         txtB(ctx, "LeafVisuals", x0 + 50, y0 + 19, txt);
@@ -497,12 +527,14 @@ public class ClickGui extends Screen {
         Draw.rrect(ctx, x0 + 15, chipY + 1, chipW - 2, 22, 11, cardFill);
         Draw.rrect(ctx, x0 + 24, chipY + 9, 6, 6, 3, 0xFF38D98A);
         txt(ctx, chipText, x0 + 38, chipY + 8, txt);
+        }
 
         // content header: title, search, close
         int cx = x0 + SB + 14, cr = x0 + W - 16, cw = cr - cx;
         boolean searching = !query.isEmpty();
-        txtB(ctx, searching ? "Search results" : tab.title, cx, y0 + 16, txt);
-        txt(ctx, searching ? shown().size() + " modules found" : tab.sub, cx, y0 + 29, dim);
+        boolean crumb = rail && !searching && selected != null && tab.cat != null && tab != Tab.CLIENT;
+        txtB(ctx, searching ? "Search results" : crumb ? tab.title + "  >  " + selected.name : tab.title, cx, y0 + 16, txt);
+        txt(ctx, searching ? shown().size() + " modules found" : crumb ? DESC.getOrDefault(selected.name, "") : tab.sub, cx, y0 + 29, dim);
         int closeX = cr - 24;
         Draw.rrect(ctx, closeX, y0 + 12, 24, 24, 12, cardFill);
         txtC(ctx, "×", closeX + 12, y0 + 17, txt);
@@ -526,10 +558,11 @@ public class ClickGui extends Screen {
             List<Module> mods = shown();
             if (selected == null || !mods.contains(selected)) selected = mods.isEmpty() ? null : mods.get(0);
             int lw = Math.min(190, cw / 2 - 10);
+            int listBottom = rail ? clipY2 - 64 : clipY2;
             listRight = cx + lw;
             int ly = clipY1 - Math.round(listScroll);
             for (Module md : mods) {
-                if (ly >= clipY1 && ly + 26 <= clipY2) {
+                if (ly >= clipY1 && ly + 26 <= listBottom) {
                     boolean mon = md.isEnabled(), sel = md == selected;
                     boolean hov = mx >= cx && mx < cx + lw && my >= ly && my < ly + 26;
                     if (mon) Draw.rrectGrad(ctx, cx, ly, lw, 26, 9, accA, accB);
@@ -546,7 +579,18 @@ public class ClickGui extends Screen {
                 }
                 ly += 31;
             }
-            listMax = Math.max(0, mods.size() * 31 - (clipY2 - clipY1));
+            listMax = Math.max(0, mods.size() * 31 - (listBottom - clipY1));
+            if (rail && selected != null) {
+                int sy = clipY2 - 58;
+                txtB(ctx, "Selected Module:", cx, sy, txt);
+                txt(ctx, fit(DESC.getOrDefault(selected.name, ""), lw), cx, sy + 12, dim);
+                boolean son = selected.isEnabled();
+                if (son) Draw.rrectGrad(ctx, cx, sy + 28, lw, 26, 9, accA, accB);
+                else { Draw.rrect(ctx, cx, sy + 28, lw, 26, 9, border); Draw.rrect(ctx, cx + 1, sy + 29, lw - 2, 24, 8, cardFill); }
+                txt(ctx, selected.name, cx + 12, sy + 37, son ? 0xFFFFFFFF : txt);
+                final Module sm = selected;
+                hits.add(new Hit(cx, sy + 28, lw, 26, false, sm::toggle, null, 0, 0));
+            }
             listScroll = Math.max(0, Math.min(listScroll, listMax));
             gx = cx + lw + 12;
             gw = cr - gx;
@@ -556,19 +600,13 @@ public class ClickGui extends Screen {
                 Card head = new Card();
                 head.rows.add(full.rows.get(0));
                 cards.add(head);
-                List<Row> rest = full.rows.subList(1, full.rows.size());
+                List<Row> rest = new ArrayList<>(full.rows.subList(1, full.rows.size()));
                 if (!rest.isEmpty()) {
-                    if (gw >= 380 && rest.size() > 1) {
+                    if (rest.size() > 3) {
                         int half = (rest.size() + 1) / 2;
-                        Card c1 = new Card(), c2 = new Card();
-                        c1.rows.addAll(rest.subList(0, half));
-                        c2.rows.addAll(rest.subList(half, rest.size()));
-                        cards.add(c1); cards.add(c2);
-                    } else {
-                        Card c1 = new Card();
-                        c1.rows.addAll(rest);
-                        cards.add(c1);
-                    }
+                        cards.add(group(selected.name + "/Main", "Main", rest.subList(0, half)));
+                        cards.add(group(selected.name + "/Additional", "Additional", rest.subList(half, rest.size())));
+                    } else cards.add(group(selected.name + "/Main", "Main", rest));
                 }
             }
         } else cards = buildCards();
@@ -604,6 +642,12 @@ public class ClickGui extends Screen {
         button(ctx, bx, by, bw, bh, "Reset", false, this::doReset);
         button(ctx, bx + bw + bgap, by, bw, bh, "Cancel", false, this::doCancel);
         button(ctx, bx + (bw + bgap) * 2, by, bw, bh, "Apply", true, this::doApply);
+        if (rail) {
+            String nk = client.getSession().getUsername();
+            var sv = client.getCurrentServerEntry();
+            String wh = sv != null ? sv.address : client.world != null ? "Singleplayer" : "Main menu";
+            txt(ctx, fit(nk + "  •  " + wh, bx - cx - 10), cx, by + 8, dim);
+        }
 
         // overlays
         ctx.getMatrices().push();
