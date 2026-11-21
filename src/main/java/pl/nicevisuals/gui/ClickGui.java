@@ -108,12 +108,19 @@ public class ClickGui extends Screen {
     private int txt, dim, cardFill, cardHover, border, field, off, accA, accB, win0, win1;
     private boolean light;
 
-    public ClickGui() {
+    private final net.minecraft.client.gui.screen.Screen parent;
+
+    public ClickGui() { this(null); }
+
+    public ClickGui(net.minecraft.client.gui.screen.Screen parent) {
         super(Text.literal("LeafVisuals"));
+        this.parent = parent;
         snapshot = NiceVisualsClient.modules.toJson();
     }
 
     @Override public boolean shouldPause() { return false; }
+
+    @Override public void close() { client.setScreen(parent); }
 
     // ---- text ----
     private Text t(String s) { return Text.literal(s).setStyle(Style.EMPTY.withFont(FONT)); }

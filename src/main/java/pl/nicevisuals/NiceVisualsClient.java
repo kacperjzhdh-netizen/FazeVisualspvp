@@ -33,6 +33,14 @@ public class NiceVisualsClient implements ClientModInitializer {
 
         net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, sw, sh) -> {
             if (!pl.nicevisuals.module.MenuStyle.applies(screen)) return;
+            if (screen instanceof net.minecraft.client.gui.screen.TitleScreen
+                    || screen instanceof net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
+                    || screen instanceof net.minecraft.client.gui.screen.world.SelectWorldScreen) {
+                net.fabricmc.fabric.api.client.screen.v1.Screens.getButtons(screen).add(
+                        net.minecraft.client.gui.widget.ButtonWidget.builder(
+                                net.minecraft.text.Text.literal("LeafVisuals"), b -> client.setScreen(new ClickGui(screen)))
+                                .dimensions(6, 6, 80, 20).build());
+            }
             net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((s, ctx, mx, my, delta) -> {
                 if (modules.menu.isEnabled()) modules.menu.draw(ctx, s, mx, my);
             });
