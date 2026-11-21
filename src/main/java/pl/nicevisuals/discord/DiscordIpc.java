@@ -89,7 +89,8 @@ public final class DiscordIpc {
             if (cfg.clientId == null || cfg.clientId.isBlank()) cfg.clientId = "1573688669821341806";
             if (cfg.clientName == null || cfg.clientName.isBlank() || cfg.clientName.equalsIgnoreCase("Fire Client")) cfg.clientName = "LeafVisuals";
             if (cfg.largeImageText == null || cfg.largeImageText.isBlank() || cfg.largeImageText.equalsIgnoreCase("Fire Client")) cfg.largeImageText = "LeafVisuals";
-            if (cfg.largeImageKey == null || cfg.largeImageKey.isBlank()) cfg.largeImageKey = "leaf";
+            if (cfg.largeImageKey == null || cfg.largeImageKey.isBlank() || cfg.largeImageKey.equals("leaf"))
+                cfg.largeImageKey = "https://raw.githubusercontent.com/kacperjzhdh-netizen/FazeVisualspvp/nicevisuals/public/leaf.png";
             if (cfg.buttonLabel == null || cfg.buttonLabel.isBlank()) cfg.buttonLabel = "Pobierz faze vials v";
             if (cfg.buttonUrl == null || cfg.buttonUrl.isBlank()) cfg.buttonUrl = "https://discord.gg/3Pm54R5fe";
             if (cfg.clientId == null || cfg.clientId.isBlank()) {
