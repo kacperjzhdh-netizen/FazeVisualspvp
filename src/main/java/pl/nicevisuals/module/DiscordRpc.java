@@ -10,7 +10,8 @@ import pl.nicevisuals.setting.BoolSetting;
 public class DiscordRpc extends Module {
     private final BoolSetting showServer = add(new BoolSetting("Show server", true));
     private final BoolSetting showTime = add(new BoolSetting("Show time", true));
-    private int ticks;
+    private final BoolSetting showFps = add(new BoolSetting("Show FPS", true));
+    private int ticks, fps;
 
     public DiscordRpc() { super("Discord RPC", Category.CLIENT); }
 
@@ -19,7 +20,9 @@ public class DiscordRpc extends Module {
 
     @Override
     public void onTick(MinecraftClient mc) {
-        if (ticks++ % 40 != 0) return;               // refresh every 2 seconds
+        int n = ticks++;
+        if (n % 40 != 0) return;               // refresh every 2 seconds
+        if (n % 300 == 0) fps = mc.getCurrentFps(); // FPS only every 15 s (Discord rate limit)
         String details;
         ServerInfo si = mc.getCurrentServerEntry();
         if (mc.world == null) details = "W menu głównym";
@@ -27,8 +30,9 @@ public class DiscordRpc extends Module {
         else if (mc.isInSingleplayer()) details = "Gra solo";
         else details = "Gra multiplayer";
         String name = DiscordIpc.config().clientName;
-        if (name == null || name.isBlank()) name = "Fire Client";
-        String state = name + " • Minecraft " + SharedConstants.getGameVersion().getName();
+        if (name == null || name.isBlank()) name = "LeafVisuals";
+        String state = name + " • Minecraft " + SharedConstants.getGameVersion().getName()
+                + (showFps.value && mc.world != null && fps > 0 ? " • " + fps + " FPS" : "");
         DiscordIpc.update(details, state, showTime.value);
     }
 }

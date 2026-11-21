@@ -37,9 +37,9 @@ public final class DiscordIpc {
     /** Editable settings stored in config/nicevisuals-discord.json. */
     public static final class Config {
         public String clientId = "";
-        public String clientName = "Fire Client";
+        public String clientName = "LeafVisuals";
         public String largeImageKey = "leaf";
-        public String largeImageText = "Fire Client";
+        public String largeImageText = "LeafVisuals";
         public String buttonLabel = "Pobierz faze vials v";
         public String buttonUrl = "";
     }
