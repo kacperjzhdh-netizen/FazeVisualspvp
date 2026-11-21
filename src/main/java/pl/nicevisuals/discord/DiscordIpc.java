@@ -41,7 +41,7 @@ public final class DiscordIpc {
         public String largeImageKey = "leaf";
         public String largeImageText = "LeafVisuals";
         public String buttonLabel = "Pobierz faze vials v";
-        public String buttonUrl = "";
+        public String buttonUrl = "https://discord.gg/3Pm54R5fe";
     }
 
     private interface Transport extends Closeable {
@@ -87,6 +87,11 @@ public final class DiscordIpc {
             if (running) return;
             cfg = loadConfig();
             if (cfg.clientId == null || cfg.clientId.isBlank()) cfg.clientId = "1573688669821341806";
+            if (cfg.clientName == null || cfg.clientName.isBlank() || cfg.clientName.equalsIgnoreCase("Fire Client")) cfg.clientName = "LeafVisuals";
+            if (cfg.largeImageText == null || cfg.largeImageText.isBlank() || cfg.largeImageText.equalsIgnoreCase("Fire Client")) cfg.largeImageText = "LeafVisuals";
+            if (cfg.largeImageKey == null || cfg.largeImageKey.isBlank()) cfg.largeImageKey = "leaf";
+            if (cfg.buttonLabel == null || cfg.buttonLabel.isBlank()) cfg.buttonLabel = "Pobierz faze vials v";
+            if (cfg.buttonUrl == null || cfg.buttonUrl.isBlank()) cfg.buttonUrl = "https://discord.gg/3Pm54R5fe";
             if (cfg.clientId == null || cfg.clientId.isBlank()) {
                 if (!warnedNoId) {
                     LOG.warn("Discord RPC is idle: set \"clientId\" in {} (your Discord application ID).", configFile());
