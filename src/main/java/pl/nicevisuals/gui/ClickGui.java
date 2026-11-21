@@ -64,6 +64,7 @@ public class ClickGui extends Screen {
             Map.entry("Hit Effect", "Particles where you hit."),
             Map.entry("Kill Effect", "Particle pillar and sound on a kill."),
             Map.entry("Trails", "Particle trail behind you."),
+            Map.entry("Menu Style", "Colour glow over title, multiplayer and add-server screens."),
             Map.entry("Sky", "Pick the colour of the sky."),
             Map.entry("Jump Particles", "Particle ring when you jump."),
             Map.entry("Discord RPC", "Show server and play time on your Discord."));

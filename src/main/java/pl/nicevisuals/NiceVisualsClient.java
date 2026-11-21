@@ -31,6 +31,13 @@ public class NiceVisualsClient implements ClientModInitializer {
         openGui = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.nicevisuals.gui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "category.nicevisuals"));
 
+        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, sw, sh) -> {
+            if (!pl.nicevisuals.module.MenuStyle.applies(screen)) return;
+            net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((s, ctx, mx, my, delta) -> {
+                if (modules.menu.isEnabled()) modules.menu.draw(ctx, s.width, s.height);
+            });
+        });
+
         ClientLifecycleEvents.CLIENT_STOPPING.register(c -> DiscordIpc.stop());
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {

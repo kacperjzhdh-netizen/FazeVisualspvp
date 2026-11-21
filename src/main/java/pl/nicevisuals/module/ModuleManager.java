@@ -24,6 +24,7 @@ public class ModuleManager {
     public final Sky sky = new Sky();
     public final Effects.HitEffect hitEffect = new Effects.HitEffect();
     public final Effects.KillEffect killEffect = new Effects.KillEffect();
+    public final MenuStyle menu = new MenuStyle();
     public final DiscordRpc rpc = new DiscordRpc();
     public final MoreModules.KillCounter kills = new MoreModules.KillCounter();
     private final Path file = FabricLoader.getInstance().getConfigDir().resolve("nicevisuals.json");
@@ -68,6 +69,8 @@ public class ModuleManager {
         ui.setEnabled(true);
         modules.add(rpc);
         rpc.setEnabled(true);
+        modules.add(menu);
+        menu.setEnabled(true);
     }
 
     public List<Module> in(Category c) {
