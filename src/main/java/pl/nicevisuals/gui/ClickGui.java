@@ -93,7 +93,9 @@ public class ClickGui extends Screen {
     private final List<P> ps = new ArrayList<>();
     private final JsonObject snapshot;
     private Tab tab = Tab.COMBAT;
-    private float scroll, maxScroll;
+    private float scroll, maxScroll, listScroll, listMax;
+    private Module selected;
+    private int listRight;
     private int clipY1, clipY2, mx, my;
     private ModeSetting openDrop;
     private int dropX, dropY, dropW;
@@ -186,6 +188,7 @@ public class ClickGui extends Screen {
         accA = hsb(hue, 0.62f, 1f);
         accB = hsb(hue + 35f, 0.55f, 1f);
         int theme = ui.theme.index;
+        if (theme == 4) { accA = 0xFFFF8A2B; accB = 0xFFFF3D1E; }
         light = theme == 2;
         if (theme == 0) {                       // Midnight: opaque dark
             win0 = 0xFF0C0E1A; win1 = 0xFF080A13;
@@ -197,6 +200,10 @@ public class ClickGui extends Screen {
             win1 = (a << 24) | (Draw.mix(0xFF0B0A1E, accA, 0.12f) & 0xFFFFFF);
             txt = 0xFFF4F1FF; dim = 0xFFB9B2D8; cardFill = 0x1CFFFFFF; cardHover = 0x2AFFFFFF;
             border = 0x50FFFFFF; field = 0x66100A24; off = 0xFF39345A;
+        } else if (theme == 4) {                // Ember: near-black with orange-red accents
+            win0 = 0xF2121010; win1 = 0xF20A0808;
+            txt = 0xFFF3EEEA; dim = 0xFF9C8F89; cardFill = 0x1CFFFFFF; cardHover = 0x2CFFFFFF;
+            border = 0x26FFFFFF; field = 0xFF0B0909; off = 0xFF3A302C;
         } else if (theme == 3) {                // Shader: very clear, neon-tinted, glowing edges
             win0 = 0x55000000 | (Draw.mix(0xFF06241A, accA, 0.38f) & 0xFFFFFF);
             win1 = 0x40000000 | (Draw.mix(0xFF04120E, accB, 0.22f) & 0xFFFFFF);
@@ -297,14 +304,16 @@ public class ClickGui extends Screen {
         c.rows.add(new Row(66, (ctx, x, y, w) -> {
             String[] names = ui.theme.modes;
             int tw = (w - 18) / 4;
-            for (int i = 0; i < 4; i++) {
-                int tx = x + i * (tw + 6);
+            int[] order = {4, 3, 1, 2};
+            for (int oi = 0; oi < 4; oi++) {
+                int i = order[oi];
+                int tx = x + oi * (tw + 6);
                 boolean sel = ui.theme.index == i;
                 Draw.rrect(ctx, tx, y, tw, 62, 9, sel ? accA : border);
                 Draw.rrect(ctx, tx + 1, y + 1, tw - 2, 60, 8, light ? 0xFFF3F5FC : 0xFF10122A);
-                int pv = i == 0 ? 0xFF0C0E1A : i == 1 ? Draw.mix(0xFF2A1B52, accA, 0.35f) : i == 3 ? Draw.mix(0xFF06241A, accA, 0.55f) : 0xFFF2F5FF;
+                int pv = i == 0 ? 0xFF0C0E1A : i == 1 ? Draw.mix(0xFF2A1B52, accA, 0.35f) : i == 3 ? Draw.mix(0xFF06241A, accA, 0.55f) : i == 4 ? 0xFF2A130A : 0xFFF2F5FF;
                 Draw.rrect(ctx, tx + 6, y + 6, tw - 12, 28, 6, pv);
-                Draw.rrect(ctx, tx + tw / 2 - 3, y + 17, 6, 6, 3, i == 2 ? 0xFF1B2140 : accB);
+                Draw.rrect(ctx, tx + tw / 2 - 3, y + 17, 6, 6, 3, i == 2 ? 0xFF1B2140 : i == 4 ? 0xFFFF6A1F : accB);
                 txtC(ctx, names[i], tx + tw / 2, y + 40, txt);
                 final int idx = i;
                 hits.add(new Hit(tx, y, tw, 62, true, () -> ui.theme.index = idx, null, 0, 0));
@@ -466,7 +475,7 @@ public class ClickGui extends Screen {
             Draw.rrect(ctx, x0 + 24, ty + 10, 8, 8, 4, sel ? 0xFFFFFFFF : Draw.alpha(accA, 0.8f));
             txt(ctx, tb.title, x0 + 40, ty + 10, sel ? 0xFFFFFFFF : txt);
             final Tab target = tb;
-            hits.add(new Hit(x0 + 14, ty, SB - 18, 28, false, () -> { tab = target; query = ""; scroll = 0; openDrop = null; }, null, 0, 0));
+            hits.add(new Hit(x0 + 14, ty, SB - 18, 28, false, () -> { tab = target; query = ""; scroll = 0; listScroll = 0; selected = null; openDrop = null; }, null, 0, 0));
             ty += 32;
         }
         // profile: nick + where you play
@@ -506,17 +515,71 @@ public class ClickGui extends Screen {
         txt(ctx, shownQ, sbx + 12, sby + 8, query.isEmpty() ? dim : txt);
         hits.add(new Hit(sbx, sby, sbw, sbh, false, () -> searchFocus = true, null, 0, 0));
 
-        // cards (two columns, shared scroll)
+        // content: module list + settings of the selected module (or a card grid)
         clipY1 = y0 + 50;
         clipY2 = y0 + H - 40;
-        int cols = cw < 380 ? 1 : 2, gap = 10;
-        int colW = (cw - gap * (cols - 1)) / cols;
+        boolean detail = !query.isEmpty() || (tab.cat != null && tab != Tab.CLIENT);
+        int gx = cx, gw = cw;
+        List<Card> cards;
+        listRight = 0;
+        if (detail) {
+            List<Module> mods = shown();
+            if (selected == null || !mods.contains(selected)) selected = mods.isEmpty() ? null : mods.get(0);
+            int lw = Math.min(190, cw / 2 - 10);
+            listRight = cx + lw;
+            int ly = clipY1 - Math.round(listScroll);
+            for (Module md : mods) {
+                if (ly >= clipY1 && ly + 26 <= clipY2) {
+                    boolean on = md.isEnabled(), sel = md == selected;
+                    boolean hov = mx >= cx && mx < cx + lw && my >= ly && my < ly + 26;
+                    if (on) Draw.rrectGrad(ctx, cx, ly, lw, 26, 9, accA, accB);
+                    else {
+                        Draw.rrect(ctx, cx, ly, lw, 26, 9, sel ? accA : border);
+                        Draw.rrect(ctx, cx + 1, ly + 1, lw - 2, 24, 8, hov ? cardHover : cardFill);
+                    }
+                    txt(ctx, md.name, cx + 12, ly + 9, on ? 0xFFFFFFFF : (sel ? txt : dim));
+                    Draw.rrect(ctx, cx + lw - 26, ly + 8, 10, 10, 5, on ? 0xCCFFFFFF : sel ? accA : off);
+                    Draw.rrect(ctx, cx + lw - 23, ly + 11, 4, 4, 2, on ? accB : cardFill);
+                    final Module mm = md;
+                    hits.add(new Hit(cx, ly, lw - 30, 26, true, () -> { selected = mm; mm.toggle(); }, null, 0, 0));
+                    hits.add(new Hit(cx + lw - 30, ly, 30, 26, true, () -> selected = mm, null, 0, 0));
+                }
+                ly += 31;
+            }
+            listMax = Math.max(0, mods.size() * 31 - (clipY2 - clipY1));
+            listScroll = Math.max(0, Math.min(listScroll, listMax));
+            gx = cx + lw + 12;
+            gw = cr - gx;
+            cards = new ArrayList<>();
+            if (selected != null) {
+                Card full = moduleCard(selected);
+                Card head = new Card();
+                head.rows.add(full.rows.get(0));
+                cards.add(head);
+                List<Row> rest = full.rows.subList(1, full.rows.size());
+                if (!rest.isEmpty()) {
+                    if (gw >= 380 && rest.size() > 1) {
+                        int half = (rest.size() + 1) / 2;
+                        Card c1 = new Card(), c2 = new Card();
+                        c1.rows.addAll(rest.subList(0, half));
+                        c2.rows.addAll(rest.subList(half, rest.size()));
+                        cards.add(c1); cards.add(c2);
+                    } else {
+                        Card c1 = new Card();
+                        c1.rows.addAll(rest);
+                        cards.add(c1);
+                    }
+                }
+            }
+        } else cards = buildCards();
+        int cols = gw < 380 ? 1 : 2, gap = 10;
+        int colW = (gw - gap * (cols - 1)) / cols;
         int[] colH = new int[cols];
         int top = clipY1 - Math.round(scroll);
-        for (Card card : buildCards()) {
+        for (Card card : cards) {
             int col = 0;
             for (int i = 1; i < cols; i++) if (colH[i] < colH[col]) col = i;
-            int cardX = cx + col * (colW + gap), cardY = top + colH[col], ch = card.height();
+            int cardX = gx + col * (colW + gap), cardY = top + colH[col], ch = card.height();
             int y1 = Math.max(cardY, clipY1), y2 = Math.min(cardY + ch, clipY2);
             if (y2 > y1) {
                 boolean full = y1 == cardY && y2 == cardY + ch;
@@ -647,7 +710,8 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double hAmount, double vAmount) {
-        scroll = Math.max(0, Math.min(maxScroll, scroll - (float) vAmount * 20f));
+        if (listRight > 0 && mx < listRight) listScroll = Math.max(0, Math.min(listMax, listScroll - (float) vAmount * 20f));
+        else scroll = Math.max(0, Math.min(maxScroll, scroll - (float) vAmount * 20f));
         openDrop = null;
         return true;
     }
