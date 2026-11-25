@@ -190,6 +190,7 @@ public class ClickGui extends Screen {
         int theme = ui.theme.index;
         if (theme == 4) { accA = 0xFFFF8A2B; accB = 0xFFFF3D1E; }
         if (theme == 5) { accA = 0xFF7A9BFF; accB = 0xFF9B86FF; }
+        if (theme == 6) { accA = 0xFF4ED67A; accB = 0xFF4ED67A; }
         light = theme == 2;
         if (theme == 0) {                       // Midnight: opaque dark
             win0 = 0xFF0C0E1A; win1 = 0xFF080A13;
@@ -201,6 +202,10 @@ public class ClickGui extends Screen {
             win1 = (a << 24) | (Draw.mix(0xFF0B0A1E, accA, 0.12f) & 0xFFFFFF);
             txt = 0xFFF4F1FF; dim = 0xFFB9B2D8; cardFill = 0x1CFFFFFF; cardHover = 0x2AFFFFFF;
             border = 0x50FFFFFF; field = 0x66100A24; off = 0xFF39345A;
+        } else if (theme == 6) {                // Flat: solid colours, no gradients, glow or shadows
+            win0 = 0xFF15171C; win1 = 0xFF15171C;
+            txt = 0xFFF1F3F5; dim = 0xFF8D939C; cardFill = 0xFF1E2128; cardHover = 0xFF272B33;
+            border = 0x00000000; field = 0xFF101216; off = 0xFF39404B;
         } else if (theme == 5) {                // Crystal: translucent blue-violet glass
             win0 = 0x9A4558B8; win1 = 0x8E34459A;
             txt = 0xFFFFFFFF; dim = 0xFFD2D9F6; cardFill = 0x2EFFFFFF; cardHover = 0x44FFFFFF;
@@ -320,22 +325,23 @@ public class ClickGui extends Screen {
     private Card themeCard() {
         Card c = new Card();
         c.rows.add(titleRow("GUI Theme"));
-        c.rows.add(new Row(66, (ctx, x, y, w) -> {
+        c.rows.add(new Row(128, (ctx, x, y, w) -> {
             String[] names = ui.theme.modes;
-            int tw = (w - 24) / 5;
-            int[] order = {5, 4, 3, 1, 2};
-            for (int oi = 0; oi < 5; oi++) {
+            int tw = (w - 12) / 3;
+            int[] order = {6, 5, 4, 3, 1, 2};
+            for (int oi = 0; oi < 6; oi++) {
                 int i = order[oi];
-                int tx = x + oi * (tw + 6);
+                int tx = x + (oi % 3) * (tw + 6), ty = y + (oi / 3) * 64;
                 boolean sel = ui.theme.index == i;
-                Draw.rrect(ctx, tx, y, tw, 62, 9, sel ? accA : border);
-                Draw.rrect(ctx, tx + 1, y + 1, tw - 2, 60, 8, light ? 0xFFF3F5FC : 0xFF10122A);
-                int pv = i == 0 ? 0xFF0C0E1A : i == 1 ? Draw.mix(0xFF2A1B52, accA, 0.35f) : i == 3 ? Draw.mix(0xFF06241A, accA, 0.55f) : i == 4 ? 0xFF2A130A : i == 5 ? 0xFF4658B8 : 0xFFF2F5FF;
-                Draw.rrect(ctx, tx + 6, y + 6, tw - 12, 28, 6, pv);
-                Draw.rrect(ctx, tx + tw / 2 - 3, y + 17, 6, 6, 3, i == 2 ? 0xFF1B2140 : i == 4 ? 0xFFFF6A1F : i == 5 ? 0xFFFFFFFF : accB);
-                txtC(ctx, names[i], tx + tw / 2, y + 40, txt);
+                Draw.rrect(ctx, tx, ty, tw, 60, 9, sel ? accA : border);
+                Draw.rrect(ctx, tx + 1, ty + 1, tw - 2, 58, 8, light ? 0xFFF3F5FC : 0xFF10122A);
+                int pv = i == 0 ? 0xFF0C0E1A : i == 1 ? Draw.mix(0xFF2A1B52, accA, 0.35f) : i == 3 ? Draw.mix(0xFF06241A, accA, 0.55f)
+                        : i == 4 ? 0xFF2A130A : i == 5 ? 0xFF4658B8 : i == 6 ? 0xFF1B1E24 : 0xFFF2F5FF;
+                Draw.rrect(ctx, tx + 6, ty + 6, tw - 12, 28, 6, pv);
+                Draw.rrect(ctx, tx + tw / 2 - 3, ty + 17, 6, 6, 3, i == 2 ? 0xFF1B2140 : i == 4 ? 0xFFFF6A1F : i == 5 ? 0xFFFFFFFF : i == 6 ? 0xFF4ED67A : accB);
+                txtC(ctx, names[i], tx + tw / 2, ty + 40, txt);
                 final int idx = i;
-                hits.add(new Hit(tx, y, tw, 62, true, () -> ui.theme.index = idx, null, 0, 0));
+                hits.add(new Hit(tx, ty, tw, 60, true, () -> ui.theme.index = idx, null, 0, 0));
             }
         }));
         return c;
@@ -470,11 +476,11 @@ public class ClickGui extends Screen {
         int x0 = (vw - W) / 2, y0 = (vh - H) / 2;
 
         // soft shadow, window + particles
-        for (int i = 6; i >= 1; i--) Draw.rrect(ctx, x0 - i * 2, y0 - i * 2 + 4, W + i * 4, H + i * 4, 16 + i * 2, light ? 0x07102040 : ui.theme.index == 3 ? Draw.alpha(accA, 0.06f) : 0x0B000000);
+        for (int i = 6; i >= 1; i--) Draw.rrect(ctx, x0 - i * 2, y0 - i * 2 + 4, W + i * 4, H + i * 4, 16 + i * 2, light ? 0x07102040 : ui.theme.index == 3 ? Draw.alpha(accA, 0.06f) : ui.theme.index == 6 ? 0x00000000 : 0x0B000000);
         Draw.rrectV(ctx, x0, y0, W, H, 16, border, Draw.alpha(border, 0.4f));
         Draw.rrectV(ctx, x0 + 1, y0 + 1, W - 2, H - 2, 15, win0, win1);
         if (ui.theme.index == 1 || ui.theme.index == 3 || ui.theme.index == 5) Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 40, 13, 0x1CFFFFFF, 0x00FFFFFF);
-        drawParticles(ctx, x0, y0, W, H);
+        if (ui.theme.index != 6) drawParticles(ctx, x0, y0, W, H);
 
         // sidebar: logo, categories, status
         boolean rail = ui.theme.index == 4;

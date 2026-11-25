@@ -6,7 +6,7 @@ import pl.nicevisuals.setting.NumSetting;
 
 /** Holds the menu appearance settings (edited from the Client tab of the menu). */
 public class Interface extends Module {
-    public final ModeSetting theme = add(new ModeSetting("GUI style", 5, "Midnight", "Glass", "Frost", "Shader", "Ember", "Crystal"));
+    public final ModeSetting theme = add(new ModeSetting("GUI look", 6, "Midnight", "Glass", "Frost", "Shader", "Ember", "Crystal", "Flat"));
     public final NumSetting hue = add(new NumSetting("Accent hue", 265, 0, 360));
     public final NumSetting glass = add(new NumSetting("Glass strength", 85, 0, 100));
     public final ModeSetting particles = add(new ModeSetting("Particles", 3, "None", "Squares", "Dots", "Snow"));
