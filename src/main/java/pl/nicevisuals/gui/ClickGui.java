@@ -191,6 +191,7 @@ public class ClickGui extends Screen {
         if (theme == 4) { accA = 0xFFFF8A2B; accB = 0xFFFF3D1E; }
         if (theme == 5) { accA = 0xFF7A9BFF; accB = 0xFF9B86FF; }
         if (theme == 6) { accA = 0xFF4ED67A; accB = 0xFF4ED67A; }
+        if (theme == 7) { accA = 0xFF9A4DFF; accB = 0xFF5B2BFF; }
         light = theme == 2;
         if (theme == 0) {                       // Midnight: opaque dark
             win0 = 0xFF0C0E1A; win1 = 0xFF080A13;
@@ -202,6 +203,10 @@ public class ClickGui extends Screen {
             win1 = (a << 24) | (Draw.mix(0xFF0B0A1E, accA, 0.12f) & 0xFFFFFF);
             txt = 0xFFF4F1FF; dim = 0xFFB9B2D8; cardFill = 0x1CFFFFFF; cardHover = 0x2AFFFFFF;
             border = 0x50FFFFFF; field = 0x66100A24; off = 0xFF39345A;
+        } else if (theme == 7) {                // Violet: deep purple-black with violet accents
+            win0 = 0xF4130C24; win1 = 0xF40B0716;
+            txt = 0xFFFFFFFF; dim = 0xFFA39CBF; cardFill = 0xFF150F26; cardHover = 0xFF1D1535;
+            border = 0x40733DD6; field = 0xFF0E0919; off = 0xFF3A3452;
         } else if (theme == 6) {                // Flat: solid colours, no gradients, glow or shadows
             win0 = 0xFF15171C; win1 = 0xFF15171C;
             txt = 0xFFF1F3F5; dim = 0xFF8D939C; cardFill = 0xFF1E2128; cardHover = 0xFF272B33;
@@ -294,6 +299,41 @@ public class ClickGui extends Screen {
 
     private final java.util.Set<String> collapsed = new java.util.HashSet<>();
 
+    private List<Card> violetCards() {
+        List<Module> mods = shown();
+        if (selected == null || !mods.contains(selected)) selected = mods.isEmpty() ? null : mods.get(0);
+        List<Card> out = new ArrayList<>();
+        Card list = new Card();
+        list.rows.add(titleRow(query.isEmpty() ? tab.title : "Results"));
+        for (Module md : mods) {
+            list.rows.add(new Row(26, (c, x, y, w) -> {
+                boolean sel = md == selected;
+                if (sel) Draw.rrect(c, x - 6, y, w + 12, 24, 8, Draw.alpha(accA, 0.22f));
+                txt(c, md.name, x + 2, y + 8, sel ? txt : dim);
+                toggle(c, md, x + w - 28, y + 5, md.isEnabled());
+                hits.add(new Hit(x - 6, y, w - 34, 24, true, () -> selected = md, null, 0, 0));
+                hits.add(new Hit(x + w - 32, y, 38, 24, true, md::toggle, null, 0, 0));
+            }));
+        }
+        out.add(list);
+        if (selected != null) {
+            List<Row> rest = new ArrayList<>(moduleCard(selected).rows.subList(1, moduleCard(selected).rows.size()));
+            if (!rest.isEmpty()) {
+                if (rest.size() > 3) {
+                    int half = (rest.size() + 1) / 2;
+                    out.add(group(selected.name + "/Main", selected.name, rest.subList(0, half)));
+                    out.add(group(selected.name + "/Additional", "Additional", rest.subList(half, rest.size())));
+                } else out.add(group(selected.name + "/Main", selected.name, rest));
+            } else {
+                Card info = new Card();
+                info.rows.add(titleRow(selected.name));
+                info.rows.add(new Row(18, (c, x, y, w) -> txt(c, DESC.getOrDefault(selected.name, "No extra settings."), x, y + 2, dim)));
+                out.add(info);
+            }
+        }
+        return out;
+    }
+
     private Card group(String key, String title, List<Row> rows) {
         Card c = new Card();
         c.rows.add(new Row(24, (ctx, x, y, w) -> {
@@ -325,20 +365,20 @@ public class ClickGui extends Screen {
     private Card themeCard() {
         Card c = new Card();
         c.rows.add(titleRow("GUI Theme"));
-        c.rows.add(new Row(128, (ctx, x, y, w) -> {
+        c.rows.add(new Row(192, (ctx, x, y, w) -> {
             String[] names = ui.theme.modes;
             int tw = (w - 12) / 3;
-            int[] order = {6, 5, 4, 3, 1, 2};
-            for (int oi = 0; oi < 6; oi++) {
+            int[] order = {7, 6, 5, 4, 3, 1, 2};
+            for (int oi = 0; oi < 7; oi++) {
                 int i = order[oi];
                 int tx = x + (oi % 3) * (tw + 6), ty = y + (oi / 3) * 64;
                 boolean sel = ui.theme.index == i;
                 Draw.rrect(ctx, tx, ty, tw, 60, 9, sel ? accA : border);
                 Draw.rrect(ctx, tx + 1, ty + 1, tw - 2, 58, 8, light ? 0xFFF3F5FC : 0xFF10122A);
                 int pv = i == 0 ? 0xFF0C0E1A : i == 1 ? Draw.mix(0xFF2A1B52, accA, 0.35f) : i == 3 ? Draw.mix(0xFF06241A, accA, 0.55f)
-                        : i == 4 ? 0xFF2A130A : i == 5 ? 0xFF4658B8 : i == 6 ? 0xFF1B1E24 : 0xFFF2F5FF;
+                        : i == 4 ? 0xFF2A130A : i == 5 ? 0xFF4658B8 : i == 6 ? 0xFF1B1E24 : i == 7 ? 0xFF1A0F33 : 0xFFF2F5FF;
                 Draw.rrect(ctx, tx + 6, ty + 6, tw - 12, 28, 6, pv);
-                Draw.rrect(ctx, tx + tw / 2 - 3, ty + 17, 6, 6, 3, i == 2 ? 0xFF1B2140 : i == 4 ? 0xFFFF6A1F : i == 5 ? 0xFFFFFFFF : i == 6 ? 0xFF4ED67A : accB);
+                Draw.rrect(ctx, tx + tw / 2 - 3, ty + 17, 6, 6, 3, i == 2 ? 0xFF1B2140 : i == 4 ? 0xFFFF6A1F : i == 5 ? 0xFFFFFFFF : i == 6 ? 0xFF4ED67A : i == 7 ? 0xFF9A4DFF : accB);
                 txtC(ctx, names[i], tx + tw / 2, ty + 40, txt);
                 final int idx = i;
                 hits.add(new Hit(tx, ty, tw, 60, true, () -> ui.theme.index = idx, null, 0, 0));
@@ -472,7 +512,8 @@ public class ClickGui extends Screen {
         ctx.getMatrices().push();
         ctx.getMatrices().scale(1f / gs, 1f / gs, 1f);
 
-        int W = Math.min(vw - 16, 660), H = Math.min(vh - 16, 360);
+        boolean violet = ui.theme.index == 7;
+        int W = Math.min(vw - 16, violet ? 800 : 660), H = Math.min(vh - 16, violet ? 440 : 360);
         int x0 = (vw - W) / 2, y0 = (vh - H) / 2;
 
         // soft shadow, window + particles
@@ -480,12 +521,31 @@ public class ClickGui extends Screen {
         Draw.rrectV(ctx, x0, y0, W, H, 16, border, Draw.alpha(border, 0.4f));
         Draw.rrectV(ctx, x0 + 1, y0 + 1, W - 2, H - 2, 15, win0, win1);
         if (ui.theme.index == 1 || ui.theme.index == 3 || ui.theme.index == 5) Draw.rrectV(ctx, x0 + 3, y0 + 3, W - 6, 40, 13, 0x1CFFFFFF, 0x00FFFFFF);
-        if (ui.theme.index != 6) drawParticles(ctx, x0, y0, W, H);
+        if (ui.theme.index != 6 && ui.theme.index != 7) drawParticles(ctx, x0, y0, W, H);
 
         // sidebar: logo, categories, status
         boolean rail = ui.theme.index == 4;
-        int SB = rail ? 64 : 150;
-        if (rail) {
+        int SB = violet ? 196 : rail ? 64 : 150;
+        if (violet) {
+            Draw.rrect(ctx, x0 + 8, y0 + 8, SB - 8, H - 16, 14, 0x40000000);
+            Draw.rrectV(ctx, x0 + 8, y0 + H - 110, SB - 8, 102, 14, 0x00000000, Draw.alpha(accA, 0.38f));
+            logo(ctx, x0 + SB / 2 - 28, y0 + 24, 56);
+            txtC(ctx, "LEAFVISUALS", x0 + SB / 2 + 4, y0 + 90, txt);
+            int vy = y0 + 124;
+            for (Tab tb : Tab.values()) {
+                boolean vsel = tb == tab && query.isEmpty();
+                boolean vhov = mx >= x0 + 16 && mx < x0 + SB - 8 && my >= vy && my < vy + 38;
+                if (vsel) Draw.rrectGrad(ctx, x0 + 16, vy, SB - 32, 38, 11, accA, accB);
+                else if (vhov) Draw.rrect(ctx, x0 + 16, vy, SB - 32, 38, 11, cardFill);
+                Draw.rrect(ctx, x0 + 26, vy + 8, 22, 22, 11, vsel ? 0x40FFFFFF : Draw.alpha(accA, 0.25f));
+                txtC(ctx, tb.title.substring(0, 1), x0 + 37, vy + 14, vsel ? 0xFFFFFFFF : accA);
+                txt(ctx, tb.title, x0 + 58, vy + 14, vsel ? 0xFFFFFFFF : dim);
+                final Tab vt = tb;
+                hits.add(new Hit(x0 + 16, vy, SB - 32, 38, false, () -> { tab = vt; query = ""; scroll = 0; listScroll = 0; selected = null; openDrop = null; }, null, 0, 0));
+                vy += 44;
+            }
+            txt(ctx, "v1.0.0", x0 + 24, y0 + H - 28, dim);
+        } else if (rail) {
             Draw.rrect(ctx, x0 + 8, y0 + 8, SB - 8, H - 16, 13, field);
             logo(ctx, x0 + 20, y0 + 16, 32);
             int ry = y0 + 62;
@@ -519,32 +579,13 @@ public class ClickGui extends Screen {
             hits.add(new Hit(x0 + 14, ty, SB - 18, 28, false, () -> { tab = target; query = ""; scroll = 0; listScroll = 0; selected = null; openDrop = null; }, null, 0, 0));
             ty += 32;
         }
-        // profile: nick + where you play
-        String nick = client.getSession().getUsername();
-        var se = client.getCurrentServerEntry();
-        String where = se != null ? se.address : client.world != null ? "Singleplayer" : "Main menu";
-        int pY = y0 + H - 108;
-        Draw.rrect(ctx, x0 + 14, pY, SB - 28, 60, 12, border);
-        Draw.rrect(ctx, x0 + 15, pY + 1, SB - 30, 58, 11, cardFill);
-        txt(ctx, "Player", x0 + 24, pY + 8, dim);
-        txtB(ctx, fit(nick, SB - 48), x0 + 24, pY + 19, txt);
-        txt(ctx, "Playing on", x0 + 24, pY + 34, dim);
-        txtB(ctx, fit(where, SB - 48), x0 + 24, pY + 45, accA);
-        int on = 0;
-        for (Module m : NiceVisualsClient.modules.modules) if (m.isEnabled() && m != ui) on++;
-        String chipText = on + (on == 1 ? " module on" : " modules on");
-        int chipW = SB - 28, chipY = y0 + H - 38;
-        Draw.rrect(ctx, x0 + 14, chipY, chipW, 24, 12, 0x5538D98A);
-        Draw.rrect(ctx, x0 + 15, chipY + 1, chipW - 2, 22, 11, cardFill);
-        Draw.rrect(ctx, x0 + 24, chipY + 9, 6, 6, 3, 0xFF38D98A);
-        txt(ctx, chipText, x0 + 38, chipY + 8, txt);
         }
 
         // content header: title, search, close
         int cx = x0 + SB + 14, cr = x0 + W - 16, cw = cr - cx;
         boolean searching = !query.isEmpty();
         boolean crumb = rail && !searching && selected != null && tab.cat != null && tab != Tab.CLIENT;
-        txtB(ctx, searching ? "Search results" : crumb ? tab.title + "  >  " + selected.name : tab.title, cx, y0 + 16, txt);
+        txtB(ctx, searching ? "Search results" : violet ? tab.title.toUpperCase() : crumb ? tab.title + "  >  " + selected.name : tab.title, cx, y0 + 16, txt);
         txt(ctx, searching ? shown().size() + " modules found" : crumb ? DESC.getOrDefault(selected.name, "") : tab.sub, cx, y0 + 29, dim);
         int closeX = cr - 24;
         Draw.rrect(ctx, closeX, y0 + 12, 24, 24, 12, cardFill);
@@ -561,7 +602,8 @@ public class ClickGui extends Screen {
         // content: module list + settings of the selected module (or a card grid)
         clipY1 = y0 + 50;
         clipY2 = y0 + H - 40;
-        boolean detail = !query.isEmpty() || (tab.cat != null && tab != Tab.CLIENT);
+        boolean listing = !query.isEmpty() || (tab.cat != null && tab != Tab.CLIENT);
+        boolean detail = listing && !violet;
         int gx = cx, gw = cw;
         List<Card> cards;
         listRight = 0;
@@ -620,8 +662,8 @@ public class ClickGui extends Screen {
                     } else cards.add(group(selected.name + "/Main", "Main", rest));
                 }
             }
-        } else cards = buildCards();
-        int cols = gw < 380 ? 1 : 2, gap = 10;
+        } else cards = violet && listing ? violetCards() : buildCards();
+        int cols = gw < 380 ? 1 : (violet && gw >= 540 ? 3 : 2), gap = 10;
         int colW = (gw - gap * (cols - 1)) / cols;
         int[] colH = new int[cols];
         int top = clipY1 - Math.round(scroll);
@@ -653,12 +695,6 @@ public class ClickGui extends Screen {
         button(ctx, bx, by, bw, bh, "Reset", false, this::doReset);
         button(ctx, bx + bw + bgap, by, bw, bh, "Cancel", false, this::doCancel);
         button(ctx, bx + (bw + bgap) * 2, by, bw, bh, "Apply", true, this::doApply);
-        if (rail) {
-            String nk = client.getSession().getUsername();
-            var sv = client.getCurrentServerEntry();
-            String wh = sv != null ? sv.address : client.world != null ? "Singleplayer" : "Main menu";
-            txt(ctx, fit(nk + "  •  " + wh, bx - cx - 10), cx, by + 8, dim);
-        }
 
         // overlays
         ctx.getMatrices().push();
